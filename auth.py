@@ -3,12 +3,8 @@
 spreadsheets para manipulación de hojas de calculo
 """
 from __future__ import print_function
-import os
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
 
 
 SCOPES = [
