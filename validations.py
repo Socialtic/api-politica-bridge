@@ -1,0 +1,66 @@
+import re
+import datetime
+
+
+def lastname_check(lastname):
+    """**Check if lastname has at least two items**
+
+    :param lastname: A lastname in list format
+    :type: list
+    :return: True is pass test, False otherwise
+    :rtype: bool
+    """
+    return True if len(lastname.split(' ')) >= 2 else False
+
+
+def membership_type_check(membership):
+    """**Check if membership type is campaing_politician until June 2**
+
+    :param membership: The membership type
+    :type membership: str
+    :return: True if membership type is campaing_politician and date is before June 2, False otherwise
+    :rtype: bool
+    """
+    current_date = datetime.datetime.now()
+    limit_date = datetime.datetime(2021, 6, 2)
+    member_condition = membership == "campaigning_politician"
+    date_condition = current_date <= limit_date
+    return True if member_condition and date_condition else False
+
+
+def date_format_check(date):
+    """**Check if date has the format YYYY-MM-DD and a valid date**
+
+    :param date: A date
+    :type: str
+    :return: True if date has the format YYYY-MM-DD with a valid date False
+    otherwise
+    :rtype: bool
+    """
+    pattern = '(19|20)[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])'
+    return True if re.search(pattern, date) else False
+
+
+def url_check(url):
+    """**Check if the url has the valid format**
+
+    Valid format in regex: "^http[s]?://wuuuu\.\w+\.\w+$"
+
+    :param url: A url
+    :type: str
+    :return: True if the url has a valid format False otherwise
+    :rtype: bool
+    """
+    pattern = '^http[s]?://w{3}\.\w+\.\w+(/\w+)?$'
+    return True if re.search(pattern, url) else False
+
+
+def profession_check(professions):
+    """Check if candidate have duplicated professions
+
+    :param professions: List of professions
+    :type professions: list
+    :return: True if candidate haven't duplicated professions, False otherwise
+    :rtype: bool
+    """
+    return True if len(professions) == len(set(professions)) else False
