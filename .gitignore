@@ -130,3 +130,6 @@ dmypy.json
 
 # Json files
 *.json
+
+# Csv files
+*.csv
