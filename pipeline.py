@@ -13,8 +13,8 @@ TEST_FIELDS = ["last_name", "membership_type", "start_date", "end_date",
                "URL_others"]
 CONTEST_CHAMBERS = get_sheets_data(STRUCT_SHEET_ID, "Table contest!C2:C357")
 
-REPORT_PATH = "reports"
-TABLES_PATH = "structured_tables"
+# REPORT_PATH = "reports"
+# TABLES_PATH = "structured_tables"
 
 
 def main():
@@ -36,7 +36,7 @@ def main():
         if error_lines:
             # Writing report
             write_report("\n".join(error_lines),
-                         f"{REPORT_PATH}/{current_chamber}_errors")
+                         f"{current_chamber}_errors")
         make_banner("Preprocessing Data")
         # Making structured data
         # TODO: Get the information of tables that are already finished
@@ -53,14 +53,14 @@ def main():
                                     CONTEST_CHAMBERS, person_header)
         # Making a table for double check
         person_table = make_table(person_header, person_data)
-        write_report(person_table, f"{TABLES_PATH}/person")
+        write_report(person_table, f"person")
         # Making other-name data
         other_name_header = ["other_name_type", "name", "person_id"]
         # This list is ready to be send to the API
         other_names_data = make_other_names_struct(dict_dataset)
         # Making a table for double check
         other_name_table = make_table(other_name_header, other_names_data)
-        write_report(other_name_table, f"{TABLES_PATH}/other-name")
+        write_report(other_name_table, f"other-name")
         # TODO Making person-profession data
         professions_catalogue = get_sheets_data(STRUCT_SHEET_ID,
                                                "Catalogue profession!B2:B120")
