@@ -4,11 +4,11 @@ from utils import row_to_dict, make_banner, my_str_to_bool
 from sheets_reader import get_sheets_data
 
 STRUCT_SHEET_ID = "1fKXpwXhKlLLG-kjh8udQIH9poNLs7kAzSnXndZ1Le4Y"
-READ_RANGES = ["Table area!B1:H2640", "Table chamber!B1:C357",
-               "Table role!B1:F357", "Table coalition!B1:D31",
-               "Table party!B1:F78", "Table person!B1:I114",
-               "Table other-name!B1:D17", "Catalogue profession!B1:B120",
-               "Table person-profession!B1:C268",
+READ_RANGES = ["Table area!B1:H375", "Table chamber!B1:C357",
+               "Table role!B1:F357", "Table coalition!B1:D36",
+               "Table party!B1:F79", "Table person!B1:I114",
+               "Table other-name!B1:D17", "Catalogue profession!B1:B119",
+               "Table person-profession!B1:C243",
                # "Table past_membership!A1:G1",
                "Table membership!B1:O114", "Table contest!B1:G357",
                "Table url!B1:F315"]
@@ -27,6 +27,8 @@ def main():
         for i, row in enumerate(dataset, start=2):
             if endpoint in ["person", "membership"]:
                 row = my_str_to_bool(row, endpoint)
+            elif endpoint == "party":
+                row["colors"] = [color.strip("'") for color in row["colors"].split(", ")]
             try:
                 # Sending row data to api
                 r = requests.post(full_url, json=row)
