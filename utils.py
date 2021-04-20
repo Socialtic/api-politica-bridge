@@ -1,6 +1,8 @@
+import re
 from validations import (last_name_check, membership_type_check,
                          date_format_check, url_check, profession_check,
                          url_other_check)
+
 
 class Catalogues:
     DEGREES_OF_STUDIES = ['', 'ELEMENTARY', 'HIGH SCHOOL', 'ASSOCIATE DEGREE',
@@ -121,7 +123,7 @@ def my_str_to_bool(row, endpoint):
     docstring
     """
     p_fields = ["dead_or_alive"]
-    m_fields = ["goes_for_coalition", "goes_for_reelection", "is_substitute", "changed_from_sustitute"]
+    m_fields = ["goes_for_coalition", "goes_for_reelection", "is_substitute", "changed_from_substitute"]
     if endpoint == "person":
         fields = p_fields
     elif endpoint == "membership":
@@ -149,8 +151,27 @@ def get_contest_id(state, current_chamber, contest_chambers):
             return i
 
 
+def get_role_name(chamber):
+    if chamber == "gubernaturas":
+        return "governmentOfficer"
+    elif chamber == "alcaldías":
+        return "executiveCouncil"
+    else:
+        return "legislatorLowerBody"
+
+
+def get_contest_name(chamber):
+    if chamber == "gubernaturas":
+        return "gubernatura"
+    elif chamber == "alcaldías":
+        return "presidencia"
+    else:
+        return "diputación"
+
+
 def make_person_struct(dataset, chamber, contest_chambers, header):
     people = []
+    contest = get_contest_name(chamber)
     for data in dataset:
         row = dict()
         for field in header:
@@ -161,7 +182,7 @@ def make_person_struct(dataset, chamber, contest_chambers, header):
             elif field == "last_degree_of_studies":
                 row[field] = Catalogues.DEGREES_OF_STUDIES.index(data[field].upper())
             elif field == "contest_id":
-                row[field] = get_contest_id(data["state"], chamber, contest_chambers)
+                row[field] = get_contest_id(data["state"], contest, contest_chambers)
             else:
                 row[field] = data[field]
         people.append(row)
@@ -180,4 +201,95 @@ def make_other_names_struct(dataset):
 
 
 def make_person_profession(dataset, professions):
-    pass
+    # Professions is a list of lists. Getting proferssion string
+    professions = [p[0].lower() for p in professions]
+    lines = []
+    for i, data in enumerate(dataset, start=1):
+        current_professions = get_columns_data(data, "profession")
+        for p_id in range(2, 7):
+            current_profession = data[f"profession_{p_id}"].lower()
+            if current_profession in professions:
+                lines.append({"person_id": i,
+                              "profession_id": professions.index(current_profession) + 1})
+    return lines
+
+
+def make_membership(dataset, chamber, parties, coalitions, contest_chambers, header):
+    """TODO: Docstring for make_membership.
+    :returns: TODO
+
+    """
+    lines = []
+    # Parties is a list of lists. Getting party string
+    parties = [p[0].lower() for p in parties]
+    coalitions = [c[0].lower().strip() for c in coalitions]
+    contest = get_contest_name(chamber)
+    current_role = get_role_name(chamber)
+    for i, data in enumerate(dataset, start=1):
+        if data["coalition"]:
+            coalition_id = coalitions.index(data["coalition"].lower().strip()) + 1
+        else:
+            coalition_id = ''
+        lines.append({
+            "person_id": i,
+            "role_id": Catalogues.ROLE_TYPES.index(current_role),
+            "party_id": parties.index(data["abbreviation"].lower()),
+            "coalition_id": coalition_id,
+            "contest_id": get_contest_id(data["state"], contest, contest_chambers),
+            "goes_for_coalition": True if data["coalition"] else False,
+            "membership_type": Catalogues.MEMBERSHIP_TYPES.index(data["membership_type"]),
+            "goes_for_reelection": False, # Always false
+            "start_date": data["start_date"], "end_date": data["end_date"],
+            "is_substitute": True if data["is_substitute"] == "Sí" else False,
+            "parent_membership_id": i if data["is_substitute"] == "Sí" else '',
+            "changed_from_substitute": False, # TODO
+            "date_changed_from_substitute": "" # TODO
+        })
+    return lines
+
+def get_row_urls(row):
+    """TODO: Docstring for get_row_urls.
+    :returns: TODO
+
+    """
+    pattern = '(^Website$|^URL_(\w)*$)'
+    return {field: row[field] for field in row if re.search(pattern, field) and field != "URL_others"}
+
+
+def get_url_type_id(field, url_types):
+    if field == "Website":
+        return url_types.index("WEBSITE_OFFICIAL") + 1
+    elif field == "URL_FB_page":
+        return url_types.index("FACEBOOK_CAMPAIGN") + 1
+    elif field == "URL_FB_profile":
+        return url_types.index("FACEBOOK_PERSONAL") + 1
+    elif field == "URL_IG":
+        return url_types.index("INSTAGRAM_CAMPAIGN") + 1
+    elif field == "URL_TW":
+        return url_types.index("TWITTER") + 1
+    else:
+        return ''
+
+
+def make_url_struct(dataset, url_types):
+    """TODO: Docstring for make_url_struct.
+
+    :arg1: TODO
+    :returns: TODO
+
+    """
+    lines = []
+    url_types = [u[0] for u in url_types]
+    for i, data in enumerate(dataset, start=1):
+        current_urls = get_row_urls(data)
+        row = dict()
+        for field in current_urls:
+            if data[field]:
+                lines.append({"url": data[field],
+                            "url_type": get_url_type_id(field, url_types),
+                            "description": '', # TODO
+                            "owner_type": 1, # TODO: depende de la hoja que este leyendo
+                            "owner_id": i
+                            })
+    return lines
+
