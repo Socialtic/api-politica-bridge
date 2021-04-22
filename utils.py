@@ -103,10 +103,10 @@ def verification_process(dataset, header):
     return lines
 
 
-def write_report(data, name):
-    """**Write a report with the errors found  at the sheet**
+def write_csv(data, name):
+    """**Write a csv file with current data**
 
-    :param data: A comma separated string with line number and fields with errors
+    :param data: A comma separated string
     :type data: str
     """
     with open(f"{name}.csv", 'w', encoding="utf-8") as f:
@@ -187,6 +187,7 @@ def make_person_struct(dataset, chamber, contest_chambers, header):
 def make_other_names_struct(dataset):
     result = []
     for i, data in enumerate(dataset, start=1):
+        # TODO: check multinickname case
         if data["nickname"]:
             result.append({"other_name_type": 2,
                            "name": data["nickname"],

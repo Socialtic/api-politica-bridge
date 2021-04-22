@@ -1,6 +1,6 @@
 from sheets import sheet_reader
 from utils import (make_banner, verification_process,
-                   write_report, make_table, make_person_struct,
+                   write_csv, make_table, make_person_struct,
                    make_other_names_struct, make_person_profession,
                    make_membership, make_url_struct)
 # ID sheets
@@ -27,45 +27,45 @@ API_BASE = 'http://localhost:5000/'
 ENDPOINTS = ["area", "chamber", "role", "coalition", "party", "person",
              "other-name", "profession", "membership", "contest", "url"]
 
+
 def main():
     make_banner("Pipeline Start")
     make_banner("Getting static tables data")
     # AREA
     area_data = sheet_reader(STRUCT_SHEET_ID,
-                                f"Table area!{STRUCT_READ_RANGES['area']}")
+                             f"Table area!{STRUCT_READ_RANGES['area']}")
     # CHAMBER
     chamber_data = sheet_reader(STRUCT_SHEET_ID,
-                                   f"Table chamber!{STRUCT_READ_RANGES['chamber']}")
+                                f"Table chamber!{STRUCT_READ_RANGES['chamber']}")
     # ROLE
     role_data = sheet_reader(STRUCT_SHEET_ID,
-                                f"Table role!{STRUCT_READ_RANGES['role']}")
+                             f"Table role!{STRUCT_READ_RANGES['role']}")
     # COALITION
     coalition_data = sheet_reader(STRUCT_SHEET_ID,
-                                     f"Table coalition!{STRUCT_READ_RANGES['coalition']}")
+                                  f"Table coalition!{STRUCT_READ_RANGES['coalition']}")
     coalitions = sheet_reader(STRUCT_SHEET_ID, "Table coalition!B2:B36",
-                                 as_list=True)
+                              as_list=True)
     coalitions = [c[0].lower().strip() for c in coalitions]
     # PARTY
     party_data = sheet_reader(STRUCT_SHEET_ID,
-                                 f"Table party!{STRUCT_READ_RANGES['party']}")
-    parties = sheet_reader(STRUCT_SHEET_ID, "Table party!C2:C78",
-                              as_list=True)
+                              f"Table party!{STRUCT_READ_RANGES['party']}")
+    parties = sheet_reader(STRUCT_SHEET_ID, "Table party!C2:C78", as_list=True)
     # Parties is a list of lists. Getting party string
     parties = [p[0].lower() for p in parties]
     # CONTEST
     contest_data = sheet_reader(STRUCT_SHEET_ID,
-                                   f"Table contest!{STRUCT_READ_RANGES['contest']}")
+                                f"Table contest!{STRUCT_READ_RANGES['contest']}")
     contest_chambers = sheet_reader(STRUCT_SHEET_ID, "Table contest!C2:C357",
-                                       as_list=True)
+                                    as_list=True)
     contest_chambers = [cc[0].lower() for cc in contest_chambers]
     # PROFESSION
     professions_catalogue = sheet_reader(STRUCT_SHEET_ID,
-                                            f"Catalogue profession!{STRUCT_READ_RANGES['profession']}",
-                                            as_list=True)
+                                         f"Catalogue profession!{STRUCT_READ_RANGES['profession']}",
+                                         as_list=True)
     # Professions is a list of lists. Getting only proferssion string
     professions_catalogue = [pc[0].lower() for pc in professions_catalogue]
     url_types = sheet_reader(STRUCT_SHEET_ID,
-                                "Catalogue url_types!B2:B23", as_list=True)
+                             "Catalogue url_types!B2:B23", as_list=True)
     url_types = [u[0] for u in url_types]
     # Dynamic data containers
     person_data, other_names_data, person_profession_data = [], [], []
@@ -83,11 +83,11 @@ def main():
         error_lines = verification_process(dataset, header)
         if error_lines:
             # Writing report
-            write_report("\n".join(error_lines),
-                         f"{current_chamber}_errors")
+            write_csv("\n".join(error_lines),
+                      f"{current_chamber}_errors")
 
+        # PREPROCESSING DYNAMIC DATA
         make_banner("Preprocessing Data")
-        # DYNAMIC DATA
 
         # PERSON
         person_header = ["full_name", "first_name", "last_name", "date_birth",
@@ -98,7 +98,7 @@ def main():
                                         contest_chambers, person_header)
         # Making a table for double check
         person_table = make_table(person_header, person_tmp)
-        write_report(person_table, f"person_{current_chamber}")
+        write_csv(person_table, f"{current_chamber}/person")
         person_data.append(person_tmp)
 
         # OTHER-NAME
@@ -107,7 +107,7 @@ def main():
         other_names_tmp = make_other_names_struct(dataset)
         # Making a table for double check
         other_name_table = make_table(other_name_header, other_names_tmp)
-        write_report(other_name_table, f"other-name_{current_chamber}")
+        write_csv(other_name_table, f"{current_chamber}/other-name")
         other_names_data.append(other_names_tmp)
 
         #  PERSON-PROFESSION
@@ -116,8 +116,8 @@ def main():
                                                        professions_catalogue)
         person_profession_table = make_table(person_profession_header,
                                              person_profession_tmp)
-        write_report(person_profession_table,
-                     f"person-profession_{current_chamber}")
+        write_csv(person_profession_table,
+                  f"{current_chamber}/person-profession")
         person_profession_data.append(person_profession_tmp)
 
         # MEMBERSHIP
@@ -132,7 +132,7 @@ def main():
                                          parties, coalitions,
                                          contest_chambers, membership_header)
         membership_table = make_table(membership_header, membership_tmp)
-        write_report(membership_table, "membership")
+        write_csv(membership_table, f"{current_chamber}/membership")
         membership_data.append(membership_tmp)
 
         # URL
@@ -140,7 +140,7 @@ def main():
                       "owner_id"]
         url_tmp = make_url_struct(dataset, url_types)
         url_table = make_table(url_header, url_tmp)
-        write_report(url_table, "url")
+        write_csv(url_table, f"{current_chamber}/url")
         url_data.append(url_tmp)
         make_banner("FINISH PRE-PROCESSING")
     # TODO: Write API connection
