@@ -5,7 +5,7 @@ from utils import row_to_dict
 sheet = spreadsheet_service.spreadsheets()
 
 
-def get_sheets_data(sheet_id, read_range, as_list=False):
+def sheet_reader(sheet_id, read_range, as_list=False):
     result = sheet.values().get(spreadsheetId=sheet_id,
                                 range=read_range).execute()
     values = result.get('values', [])

@@ -1,4 +1,4 @@
-from sheets_reader import get_sheets_data
+from sheets import sheet_reader
 from utils import (make_banner, verification_process,
                    write_report, make_table, make_person_struct,
                    make_other_names_struct, make_person_profession,
@@ -31,40 +31,40 @@ def main():
     make_banner("Pipeline Start")
     make_banner("Getting static tables data")
     # AREA
-    area_data = get_sheets_data(STRUCT_SHEET_ID,
+    area_data = sheet_reader(STRUCT_SHEET_ID,
                                 f"Table area!{STRUCT_READ_RANGES['area']}")
     # CHAMBER
-    chamber_data = get_sheets_data(STRUCT_SHEET_ID,
+    chamber_data = sheet_reader(STRUCT_SHEET_ID,
                                    f"Table chamber!{STRUCT_READ_RANGES['chamber']}")
     # ROLE
-    role_data = get_sheets_data(STRUCT_SHEET_ID,
+    role_data = sheet_reader(STRUCT_SHEET_ID,
                                 f"Table role!{STRUCT_READ_RANGES['role']}")
     # COALITION
-    coalition_data = get_sheets_data(STRUCT_SHEET_ID,
+    coalition_data = sheet_reader(STRUCT_SHEET_ID,
                                      f"Table coalition!{STRUCT_READ_RANGES['coalition']}")
-    coalitions = get_sheets_data(STRUCT_SHEET_ID, "Table coalition!B2:B36",
+    coalitions = sheet_reader(STRUCT_SHEET_ID, "Table coalition!B2:B36",
                                  as_list=True)
     coalitions = [c[0].lower().strip() for c in coalitions]
     # PARTY
-    party_data = get_sheets_data(STRUCT_SHEET_ID,
+    party_data = sheet_reader(STRUCT_SHEET_ID,
                                  f"Table party!{STRUCT_READ_RANGES['party']}")
-    parties = get_sheets_data(STRUCT_SHEET_ID, "Table party!C2:C78",
+    parties = sheet_reader(STRUCT_SHEET_ID, "Table party!C2:C78",
                               as_list=True)
     # Parties is a list of lists. Getting party string
     parties = [p[0].lower() for p in parties]
     # CONTEST
-    contest_data = get_sheets_data(STRUCT_SHEET_ID,
+    contest_data = sheet_reader(STRUCT_SHEET_ID,
                                    f"Table contest!{STRUCT_READ_RANGES['contest']}")
-    contest_chambers = get_sheets_data(STRUCT_SHEET_ID, "Table contest!C2:C357",
+    contest_chambers = sheet_reader(STRUCT_SHEET_ID, "Table contest!C2:C357",
                                        as_list=True)
     contest_chambers = [cc[0].lower() for cc in contest_chambers]
     # PROFESSION
-    professions_catalogue = get_sheets_data(STRUCT_SHEET_ID,
+    professions_catalogue = sheet_reader(STRUCT_SHEET_ID,
                                             f"Catalogue profession!{STRUCT_READ_RANGES['profession']}",
                                             as_list=True)
     # Professions is a list of lists. Getting only proferssion string
     professions_catalogue = [pc[0].lower() for pc in professions_catalogue]
-    url_types = get_sheets_data(STRUCT_SHEET_ID,
+    url_types = sheet_reader(STRUCT_SHEET_ID,
                                 "Catalogue url_types!B2:B23", as_list=True)
     url_types = [u[0] for u in url_types]
     # Dynamic data containers
@@ -75,7 +75,7 @@ def main():
         current_chamber = read_range.split('!')[0].lower()
         make_banner(f"Data from >> {current_chamber}")
         # Getting sheet data as list of list
-        dataset = get_sheets_data(CAPTURE_SHEET_ID, read_range)
+        dataset = sheet_reader(CAPTURE_SHEET_ID, read_range)
         # Getting header
         header = dataset[0].keys()
         # Start capture verification
