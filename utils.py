@@ -1,4 +1,6 @@
 import re
+import requests
+from requests import exceptions as r_excepts
 from validations import (last_name_check, membership_type_check,
                          date_format_check, url_check, profession_check,
                          url_other_check)
@@ -77,7 +79,7 @@ def verification_process(dataset, header):
         print(f"Checking row #{i} = {row['full_name']}")
         line = f'{i}'
         # Tests suite start
-        line += ",last_name" if not last_name_check(row["last_name"] or []) else ""
+        line += ",last_name" if not last_name_check(row["last_name"] or "") else ""
         line += ",membership_type" if not membership_type_check(row["membership_type"]) else ""
         line += ",start_date" if not date_format_check(row["start_date"]) else ""
         line += ",end_date" if not date_format_check(row["end_date"]) else ""
@@ -137,10 +139,15 @@ def make_table(header, dataset):
     return table
 
 
-def get_contest_id(state, current_chamber, contest_chambers):
-    state = state.lower()
+def get_contest_id(data, current_chamber, contest_chambers):
+    if current_chamber == "gubernatura":
+        location = data["state"].lower()
+    elif current_chamber == "presidencia":
+        location = data["area"].lower()
+    elif current_chamber == "diputación":
+        location = f"distrito federal {data['city']} de {data['state'].lower()}"
     for i, contest_chamber in enumerate(contest_chambers, start=1):
-        if state in contest_chamber and current_chamber in contest_chamber:
+        if location in contest_chamber and current_chamber in contest_chamber:
             return i
 
 
@@ -176,7 +183,7 @@ def make_person_struct(dataset, chamber, contest_chambers, header):
                 last_degree = data[field].upper()
                 row[field] = Catalogues.DEGREES_OF_STUDIES.index(last_degree)
             elif field == "contest_id":
-                row[field] = get_contest_id(data["state"], contest_chamber,
+                row[field] = get_contest_id(data, contest_chamber,
                                             contest_chambers)
             else:
                 row[field] = data[field]
@@ -229,7 +236,7 @@ def make_membership(dataset, chamber, parties, coalitions, contest_chambers, hea
             "role_id": Catalogues.ROLE_TYPES.index(current_role),
             "party_id": parties.index(data["abbreviation"].lower()) + 1,
             "coalition_id": coalition_id,
-            "contest_id": get_contest_id(data["state"], contest_chamber,
+            "contest_id": get_contest_id(data, contest_chamber,
                                          contest_chambers),
             "goes_for_coalition": True if data["coalition"] else False,
             "membership_type": Catalogues.MEMBERSHIP_TYPES.index(data["membership_type"]),
@@ -285,5 +292,29 @@ def make_url_struct(dataset, url_types):
                             "description": '', # TODO
                             "owner_type": 1, # TODO: depende de la hoja que este leyendo
                             "owner_id": i
-                            })
+                                  })
     return lines
+
+
+def party_colors_to_list(party_data):
+    for row in party_data:
+        row["colors"] = [color.strip("'") for color in row["colors"].split(", ")]
+    return party_data
+
+
+def send_data(base_url, endpoint, dataset):
+    """TODO: Docstring for send_data.
+    :returns: TODO
+    """
+    full_url = base_url + endpoint
+    for i, row in enumerate(dataset, start=2):
+        try:
+            # Sending row data to api
+            r = requests.post(full_url, json=row)
+        except r_excepts.ConnectionError:
+            print("[CONNECTION ERROR]")
+            print(f"#{i} | url: {full_url} | data:{row}")
+        response = r.json()
+        if not response["success"]:
+            breakpoint()
+            print(f"[ERROR]: {endpoint} #{i} {r.json()['error']}")
