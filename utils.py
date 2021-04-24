@@ -316,5 +316,4 @@ def send_data(base_url, endpoint, dataset):
             print(f"#{i} | url: {full_url} | data:{row}")
         response = r.json()
         if not response["success"]:
-            breakpoint()
             print(f"[ERROR]: {endpoint} #{i} {r.json()['error']}")
