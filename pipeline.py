@@ -2,17 +2,21 @@ from sheets import sheet_reader
 from utils import (make_banner, verification_process,
                    write_csv, make_table, make_person_struct,
                    make_other_names_struct, make_person_profession,
-                   make_membership, make_url_struct)
+                   make_membership, make_url_struct, party_colors_to_list,
+                   send_data)
 # ID sheets
 CAPTURE_SHEET_ID = "1mk9LTI5RBYwrEPzILeDY925VJbLVmEoZyRzaa1gZ_hk"
 STRUCT_SHEET_ID = "1fKXpwXhKlLLG-kjh8udQIH9poNLs7kAzSnXndZ1Le4Y"
 # Capture Read Ranges
-READ_RANGES = ["Gubernaturas!A1:AB114", "Alcaldías!A1:AC63"]
+READ_RANGES = ["Gubernaturas!A1:AB114",
+               "Alcaldías!A1:AC131",
+               "Diputaciones!A1:AD1370"
+               ]
 # Struct read ranges
 STRUCT_READ_RANGES = {
     "area": "B1:H375", "chamber": "B1:C357", "role": "B1:F357",
     "coalition": "B1:D36", "party": "B1:F78", "other-name": "B1:D17",
-    "profession": "B2:B119", "person-profession": "B1:C243",
+    "profession": "B1:B119", "person-profession": "B1:C243",
     "contest": "B1:G357"
     # "past-membership": "A1:G1",
     }
@@ -30,7 +34,7 @@ ENDPOINTS = ["area", "chamber", "role", "coalition", "party", "person",
 
 def main():
     make_banner("Pipeline Start")
-    make_banner("Getting static tables data")
+    print("\t * Getting static tables data")
     # AREA
     area_data = sheet_reader(STRUCT_SHEET_ID,
                              f"Table area!{STRUCT_READ_RANGES['area']}")
@@ -49,6 +53,7 @@ def main():
     # PARTY
     party_data = sheet_reader(STRUCT_SHEET_ID,
                               f"Table party!{STRUCT_READ_RANGES['party']}")
+    party_data = party_colors_to_list(party_data)
     parties = sheet_reader(STRUCT_SHEET_ID, "Table party!C2:C78", as_list=True)
     # Parties is a list of lists. Getting party string
     parties = [p[0].lower() for p in parties]
@@ -59,8 +64,10 @@ def main():
                                     as_list=True)
     contest_chambers = [cc[0].lower() for cc in contest_chambers]
     # PROFESSION
+    profession_data = sheet_reader(STRUCT_SHEET_ID,
+                                   f"Catalogue profession!{STRUCT_READ_RANGES['profession']}")
     professions_catalogue = sheet_reader(STRUCT_SHEET_ID,
-                                         f"Catalogue profession!{STRUCT_READ_RANGES['profession']}",
+                                         "Catalogue profession!B2:B119",
                                          as_list=True)
     # Professions is a list of lists. Getting only proferssion string
     professions_catalogue = [pc[0].lower() for pc in professions_catalogue]
@@ -70,24 +77,28 @@ def main():
     # Dynamic data containers
     person_data, other_names_data, person_profession_data = [], [], []
     membership_data, url_data = [], []
+    print("\t OK.")
     # Main loop throught sheet pages
     for read_range in READ_RANGES:
         current_chamber = read_range.split('!')[0].lower()
-        make_banner(f"Data from >> {current_chamber}")
         # Getting sheet data as list of list
         dataset = sheet_reader(CAPTURE_SHEET_ID, read_range)
+        make_banner(f"{current_chamber} = {len(dataset)}")
         # Getting header
         header = dataset[0].keys()
         # Start capture verification
-        make_banner("Tests Suite begin")
+        print("\t * Tests Suite begin")
         error_lines = verification_process(dataset, header)
         if error_lines:
             # Writing report
             write_csv("\n".join(error_lines),
                       f"{current_chamber}_errors")
+            print(f"\n\t ** {len(error_lines)} lines failed at {current_chamber} **")
+        else:
+            print("\t Ok.")
 
         # PREPROCESSING DYNAMIC DATA
-        make_banner("Preprocessing Data")
+        print("\t * Build dynamic data")
 
         # PERSON
         person_header = ["full_name", "first_name", "last_name", "date_birth",
@@ -99,7 +110,7 @@ def main():
         # Making a table for double check
         person_table = make_table(person_header, person_tmp)
         write_csv(person_table, f"{current_chamber}/person")
-        person_data.append(person_tmp)
+        person_data += person_tmp
 
         # OTHER-NAME
         other_name_header = ["other_name_type", "name", "person_id"]
@@ -108,7 +119,7 @@ def main():
         # Making a table for double check
         other_name_table = make_table(other_name_header, other_names_tmp)
         write_csv(other_name_table, f"{current_chamber}/other-name")
-        other_names_data.append(other_names_tmp)
+        other_names_data += other_names_tmp
 
         #  PERSON-PROFESSION
         person_profession_header = ["person_id", "profession_id"]
@@ -118,7 +129,7 @@ def main():
                                              person_profession_tmp)
         write_csv(person_profession_table,
                   f"{current_chamber}/person-profession")
-        person_profession_data.append(person_profession_tmp)
+        person_profession_data += person_profession_tmp
 
         # MEMBERSHIP
         membership_header = ["person_id", "role_id", "party_id",
@@ -133,7 +144,7 @@ def main():
                                          contest_chambers, membership_header)
         membership_table = make_table(membership_header, membership_tmp)
         write_csv(membership_table, f"{current_chamber}/membership")
-        membership_data.append(membership_tmp)
+        membership_data += membership_tmp
 
         # URL
         url_header = ["url", "description", "url_type", "owner_type",
@@ -141,9 +152,45 @@ def main():
         url_tmp = make_url_struct(dataset, url_types)
         url_table = make_table(url_header, url_tmp)
         write_csv(url_table, f"{current_chamber}/url")
-        url_data.append(url_tmp)
-        make_banner("FINISH PRE-PROCESSING")
-    # TODO: Write API connection
+        url_data += url_tmp
+        print("\t * Ok.")
+    make_banner("Sending data to API")
+    # AREA
+    print("\t * AREA")
+    send_data(API_BASE, 'area', area_data)
+    # CHAMBER
+    print("\t * CHAMBER")
+    send_data(API_BASE, 'chamber', chamber_data)
+    # ROLE
+    print("\t * ROLE")
+    send_data(API_BASE, 'role', role_data)
+    # COALITION
+    print("\t * COALITION")
+    send_data(API_BASE, 'coalition', coalition_data)
+    # PARTY
+    print("\t * PARTY")
+    send_data(API_BASE, 'party', party_data)
+    # PERSON
+    print("\t * PERSON")
+    send_data(API_BASE, 'person', person_data)
+    # OTHER-NAME
+    print("\t * OTHER-NAME")
+    send_data(API_BASE, 'other-name', other_names_data)
+    # PROFESSION
+    print("\t * PROFESSION")
+    send_data(API_BASE, 'profession', profession_data)
+    # PERSON-PROFESSION
+    print("\t * PERSON-PROFESSION")
+    send_data(API_BASE, 'person-profession', person_profession_data)
+    # MEMBERSHIP
+    print("\t * MEMBERSHIP")
+    send_data(API_BASE, 'membership', membership_data)
+    # CONTEST
+    print("\t * CONTEST")
+    send_data(API_BASE, 'contest', contest_data)
+    # URL
+    print("\t * URL")
+    send_data(API_BASE, 'url', url_data)
 
 
 if __name__ == "__main__":
