@@ -53,16 +53,16 @@ def url_check(url, mode):
     """
 
     if mode == "strict":
-        pattern = '(^http[s]?:\/\/w{3}\.(facebook|instagram|twitter)\.com\/([\w.%-]+)?$|^$)'
+        pattern = '(^http[s]?:\/\/w{3}\.(facebook|instagram|twitter)\.com\/([\w.%?=-]+)?$|^$)'
     elif mode == "light":
-        pattern = '(^http[s]?:\/\/(w{3}\.)?\w+[.\w]+(\/[\w.?%=@-]+)*$|^$)'
+        pattern = '(^http[s]?:\/\/(w{3}\.)?\w+[.\w]+(\/[\w.?%=@&-]+)*$|^$)'
     return True if re.search(pattern, url) else False
 
 
 def url_other_check(urls):
     wrong_urls = []
     email_pattern = '^[\w.+-]+@[\w-]+\.[\w.-]+$'
-    url_pattern = '^http[s]?:\/\/(w{3}\.)?\w+[.\w]+(\/[\w.?%=@-]+)*$'
+    url_pattern = '^http[s]?:\/\/(w{3}\.)?\w+[.\w]+(\/[\w.?%=@&-]+)*$'
     pattern = f'({email_pattern}|{url_pattern}|^$)'
     wrong_urls = [str(i) for i, url in enumerate(urls, start=1) if not re.search(pattern, url.strip())]
     return f",URL_others({','.join(wrong_urls)})" if wrong_urls else ""
