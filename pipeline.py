@@ -2,7 +2,7 @@ from sheets import sheet_reader
 from utils import (make_banner, verification_process,
                    write_csv, make_table, make_person_struct,
                    make_other_names_struct, make_person_profession,
-                   make_membership, make_url_struct, party_colors_to_list,
+                   make_membership, make_url_struct, colors_to_list,
                    send_data)
 # ID sheets
 CAPTURE_SHEET_ID = "1mk9LTI5RBYwrEPzILeDY925VJbLVmEoZyRzaa1gZ_hk"
@@ -47,13 +47,14 @@ def main():
     # COALITION
     coalition_data = sheet_reader(STRUCT_SHEET_ID,
                                   f"Table coalition!{STRUCT_READ_RANGES['coalition']}")
+    coalition_data = colors_to_list(coalition_data)
     coalitions = sheet_reader(STRUCT_SHEET_ID, "Table coalition!B2:B36",
                               as_list=True)
     coalitions = [c[0].lower().strip() for c in coalitions]
     # PARTY
     party_data = sheet_reader(STRUCT_SHEET_ID,
                               f"Table party!{STRUCT_READ_RANGES['party']}")
-    party_data = party_colors_to_list(party_data)
+    party_data = colors_to_list(party_data)
     parties = sheet_reader(STRUCT_SHEET_ID, "Table party!C2:C78", as_list=True)
     # Parties is a list of lists. Getting party string
     parties = [p[0].lower() for p in parties]

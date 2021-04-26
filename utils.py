@@ -296,10 +296,11 @@ def make_url_struct(dataset, url_types):
     return lines
 
 
-def party_colors_to_list(party_data):
-    for row in party_data:
-        row["colors"] = [color.strip("'") for color in row["colors"].split(", ")]
-    return party_data
+def colors_to_list(data):
+    for row in data:
+        colors_list = row["colors"].split(",")
+        row["colors"] = [color.strip("' ") for color in colors_list]
+    return data
 
 
 def send_data(base_url, endpoint, dataset):
