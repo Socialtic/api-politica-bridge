@@ -18,7 +18,8 @@ def membership_type_check(membership):
 
     :param membership: The membership type
     :type membership: str
-    :return: True if membership type is campaing_politician and date is before June 2, False otherwise
+    :return: True if membership type is campaing_politician and date
+    is before June 2, False otherwise
     :rtype: bool
     """
     current_date = datetime.datetime.now()
@@ -28,7 +29,7 @@ def membership_type_check(membership):
     return True if member_condition and date_condition else False
 
 
-def date_format_check(date):
+def date_format_check(date, date_type):
     """**Check if date has the format YYYY-MM-DD and a valid date**
 
     :param date: A date
@@ -37,8 +38,12 @@ def date_format_check(date):
     otherwise
     :rtype: bool
     """
-    pattern = '(^(19|20)[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$|^$)'
-    return True if re.search(pattern, date) or "" else False
+    birth_pattern = '(^(19|20)[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$|^$)'
+    start_end_pattern = '(^2021-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$|^$)'
+    if date_type == "birth":
+        return True if re.search(birth_pattern, date) or "" else False
+    elif date_type == "start_end":
+        return True if re.search(start_end_pattern, date) or "" else False
 
 
 def url_check(url, mode):
