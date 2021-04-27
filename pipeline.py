@@ -105,6 +105,7 @@ def main():
         person_header = ["full_name", "first_name", "last_name", "date_birth",
                          "gender", "dead_or_alive", "last_degree_of_studies",
                          "contest_id"]
+        person_count = len(person_data)
         # This list is ready to be send to the API
         person_tmp = make_person_struct(dataset, current_chamber,
                                         contest_chambers, person_header)
@@ -116,7 +117,7 @@ def main():
         # OTHER-NAME
         other_name_header = ["other_name_type", "name", "person_id"]
         # This list is ready to be send to the API
-        other_names_tmp = make_other_names_struct(dataset)
+        other_names_tmp = make_other_names_struct(dataset, person_count)
         # Making a table for double check
         other_name_table = make_table(other_name_header, other_names_tmp)
         write_csv(other_name_table, f"{current_chamber}/other-name")
@@ -125,7 +126,8 @@ def main():
         #  PERSON-PROFESSION
         person_profession_header = ["person_id", "profession_id"]
         person_profession_tmp = make_person_profession(dataset,
-                                                       professions_catalogue)
+                                                       professions_catalogue,
+                                                       person_count)
         person_profession_table = make_table(person_profession_header,
                                              person_profession_tmp)
         write_csv(person_profession_table,
@@ -142,7 +144,8 @@ def main():
                              "date_changed_from_substitute"]
         membership_tmp = make_membership(dataset, current_chamber,
                                          parties, coalitions,
-                                         contest_chambers, membership_header)
+                                         contest_chambers, membership_header,
+                                         person_count)
         membership_table = make_table(membership_header, membership_tmp)
         write_csv(membership_table, f"{current_chamber}/membership")
         membership_data += membership_tmp
@@ -150,12 +153,14 @@ def main():
         # URL
         url_header = ["url", "description", "url_type", "owner_type",
                       "owner_id"]
-        url_tmp = make_url_struct(dataset, url_types)
+        url_tmp = make_url_struct(dataset, url_types, current_chamber,
+                                  person_count)
         url_table = make_table(url_header, url_tmp)
         write_csv(url_table, f"{current_chamber}/url")
         url_data += url_tmp
         print("\t * Ok.")
     make_banner("Sending data to API")
+    breakpoint()
     # AREA
     print("\t * AREA")
     send_data(API_BASE, 'area', area_data)

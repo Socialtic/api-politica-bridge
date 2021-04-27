@@ -22,6 +22,11 @@ class Catalogues:
     #   GOBERNADOR, DIPUTADO , PRESIDENTE MUNICIPAL
     ROLE_TYPES = ['', 'governmentOfficer', 'legislatorLowerBody',
                   'executiveCouncil']
+    URL_TYPES = {"Website": "WEBSITE_OFFICIAL",
+                 "URL_FB_page": "FACEBOOK_CAMPAIGN",
+                 "URL_FB_profile": "FACEBOOK_PERSONAL",
+                 "URL_IG": "INSTAGRAM_CAMPAIGN", "URL_TW": "TWITTER",
+                 "source_of_truth": "SOURCE_OF_TRUTH"}
 
 
 def make_banner(title):
@@ -81,9 +86,9 @@ def verification_process(dataset, header):
         # Tests suite start
         line += ",last_name" if not last_name_check(row["last_name"] or "") else ""
         line += ",membership_type" if not membership_type_check(row["membership_type"]) else ""
-        line += ",start_date" if not date_format_check(row["start_date"]) else ""
-        line += ",end_date" if not date_format_check(row["end_date"]) else ""
-        line += ",date_birth" if not date_format_check(row["date_birth"]) else ""
+        line += ",start_date" if not date_format_check(row["start_date"], "start_end") else ""
+        line += ",end_date" if not date_format_check(row["end_date"], "start_end") else ""
+        line += ",date_birth" if not date_format_check(row["date_birth"], "birth") else ""
         professions = get_columns_data(row, "profession")
         # TODO: from 2 to 6 only
         line += ",professions" if not profession_check(professions.values()) else ""
@@ -116,9 +121,6 @@ def write_csv(data, name):
 
 
 def my_str_to_bool(row, endpoint):
-    """
-    docstring
-    """
     p_fields = ["dead_or_alive"]
     m_fields = ["goes_for_coalition", "goes_for_reelection", "is_substitute", "changed_from_substitute"]
     if endpoint == "person":
@@ -191,18 +193,18 @@ def make_person_struct(dataset, chamber, contest_chambers, header):
     return people
 
 
-def make_other_names_struct(dataset):
+def make_other_names_struct(dataset, persons_count):
     result = []
     for i, data in enumerate(dataset, start=1):
         # TODO: check multinickname case
         if data["nickname"]:
             result.append({"other_name_type": 2,
                            "name": data["nickname"],
-                           "person_id": i})
+                           "person_id": i + persons_count})
     return result
 
 
-def make_person_profession(dataset, professions):
+def make_person_profession(dataset, professions, persons_count):
     lines = []
     pattern = '^profession_[2-6]$'
     for i, data in enumerate(dataset, start=1):
@@ -212,17 +214,14 @@ def make_person_profession(dataset, professions):
                 if profession:
                     profession_id = professions.index(profession) + 1
                     lines.append({
-                        "person_id": i,
+                        "person_id": i + persons_count,
                         "profession_id": profession_id
                     })
     return lines
 
 
-def make_membership(dataset, chamber, parties, coalitions, contest_chambers, header):
-    """TODO: Docstring for make_membership.
-    :returns: TODO
-
-    """
+def make_membership(dataset, chamber, parties, coalitions, contest_chambers,
+                    header, persons_count):
     lines = []
     contest_chamber = get_contest_name(chamber)
     current_role = get_role_name(chamber)
@@ -232,7 +231,7 @@ def make_membership(dataset, chamber, parties, coalitions, contest_chambers, hea
         else:
             coalition_id = ''
         lines.append({
-            "person_id": i,
+            "person_id": i + persons_count,
             "role_id": Catalogues.ROLE_TYPES.index(current_role),
             "party_id": parties.index(data["abbreviation"].lower()) + 1,
             "coalition_id": coalition_id,
@@ -244,55 +243,58 @@ def make_membership(dataset, chamber, parties, coalitions, contest_chambers, hea
             "start_date": data["start_date"], "end_date": data["end_date"],
             "is_substitute": True if data["is_substitute"] == "Sí" else False,
             "parent_membership_id": i if data["is_substitute"] == "Sí" else '',
-            "changed_from_substitute": False, # TODO
-            "date_changed_from_substitute": "" # TODO
+            "changed_from_substitute": False, # TODO:
+            "date_changed_from_substitute": "" # TODO:
         })
     return lines
 
 
 def get_row_urls(row):
-    """TODO: Docstring for get_row_urls.
-    :returns: TODO
-
-    """
     pattern = '(^Website$|^URL_(\w)*$)'
     return {field: row[field] for field in row if re.search(pattern, field) and field != "URL_others"}
 
 
-def get_url_type_id(field, url_types):
-    if field == "Website":
-        return url_types.index("WEBSITE_OFFICIAL") + 1
-    elif field == "URL_FB_page":
-        return url_types.index("FACEBOOK_CAMPAIGN") + 1
-    elif field == "URL_FB_profile":
-        return url_types.index("FACEBOOK_PERSONAL") + 1
-    elif field == "URL_IG":
-        return url_types.index("INSTAGRAM_CAMPAIGN") + 1
-    elif field == "URL_TW":
-        return url_types.index("TWITTER") + 1
+def get_url_type_id(field, url_types, url=""):
+    email_pattern = '^[\w.+-]+@[\w-]+\.[\w.-]+$'
+    if field == "URL_others":
+        for u_type in url_types:
+            if u_type.lower() in url:
+                return url_types.index(u_type) + 1
+            elif re.search(email_pattern, url):
+                return url_types.index("EMAIL") + 1
+        return 0
     else:
-        return ''
+        return url_types.index(Catalogues.URL_TYPES[field]) + 1
 
 
-def make_url_struct(dataset, url_types):
-    """TODO: Docstring for make_url_struct.
-
-    :arg1: TODO
-    :returns: TODO
-
-    """
+def make_url_struct(dataset, url_types, current_chamber, persons_count):
     lines = []
-    pattern = '(^Website$|^URL_(\w)*$)'
+    field_pattern = '(^Website$|^URL_(\w)*$)'
+
     for i, data in enumerate(dataset, start=1):
         for field in data:
-            if re.search(pattern, field) and field != "URL_others":
+            if re.search(field_pattern, field) and field != "URL_others":
                 if data[field]:
-                    lines.append({"url": data[field],
+                    row = {
+                            "url": data[field],
                             "url_type": get_url_type_id(field, url_types),
                             "description": '', # TODO
-                            "owner_type": 1, # TODO: depende de la hoja que este leyendo
-                            "owner_id": i
-                                  })
+                            "owner_type": 4 if field == "source_of_truth" else 1, # TODO: persona, partido, coalicion
+                            "owner_id": i + persons_count
+                        }
+                    lines.append(row)
+            elif field == "URL_others":
+                for url in data[field].split(","):
+                    clean_url = url.strip()
+                    if clean_url:
+                        row = {
+                            "url": clean_url,
+                            "url_type": get_url_type_id(field, url_types, url),
+                            "description": '', # TODO
+                            "owner_type": 1, # TODO: persona, partido, coalicion
+                            "owner_id": i + persons_count
+                        }
+                        lines.append(row)
     return lines
 
 
@@ -304,9 +306,6 @@ def colors_to_list(data):
 
 
 def send_data(base_url, endpoint, dataset):
-    """TODO: Docstring for send_data.
-    :returns: TODO
-    """
     full_url = base_url + endpoint
     for i, row in enumerate(dataset, start=2):
         try:
