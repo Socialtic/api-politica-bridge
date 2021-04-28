@@ -14,10 +14,9 @@ READ_RANGES = ["Gubernaturas!A1:AB114",
                ]
 # Struct read ranges
 STRUCT_READ_RANGES = {
-    "area": "B1:H375", "chamber": "B1:C357", "role": "B1:F357",
-    "coalition": "B1:D36", "party": "B1:F78", "other-name": "B1:D17",
-    "profession": "B1:B119", "person-profession": "B1:C243",
-    "contest": "B1:G357"
+    "area": "B1:H376", "chamber": "B1:C358", "role": "B1:F358",
+    "coalition": "B1:D36", "party": "B1:F78",
+    "profession": "B1:B119", "contest": "B1:G358"
     # "past-membership": "A1:G1",
     }
 # Only test in this columns
@@ -61,7 +60,7 @@ def main():
     # CONTEST
     contest_data = sheet_reader(STRUCT_SHEET_ID,
                                 f"Table contest!{STRUCT_READ_RANGES['contest']}")
-    contest_chambers = sheet_reader(STRUCT_SHEET_ID, "Table contest!C2:C357",
+    contest_chambers = sheet_reader(STRUCT_SHEET_ID, "Table contest!C2:C358",
                                     as_list=True)
     contest_chambers = [cc[0].lower() for cc in contest_chambers]
     # PROFESSION
