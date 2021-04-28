@@ -46,7 +46,7 @@ def date_format_check(date, date_type):
         return True if re.search(start_end_pattern, date) or "" else False
 
 
-def url_check(url, mode):
+def url_check(urls, mode, field):
     """**Check if the url has the valid format**
 
     Valid format in regex: "^http[s]?://w{3}\.\w+\.\w+$"
@@ -61,7 +61,8 @@ def url_check(url, mode):
         pattern = '(^http[s]?:\/\/w{3}\.(facebook|instagram|twitter)\.com\/([\w.%?=-]+)?$|^$)'
     elif mode == "light":
         pattern = '(^http[s]?:\/\/(w{3}\.)?\w+[.\w]+(\/[\w.?%=@&-]+)*$|^$)'
-    return True if re.search(pattern, url) else False
+    wrong_urls = [str(i) for i, url in enumerate(urls, start=1) if not re.search(pattern, url.strip())]
+    return f",{field}({','.join(wrong_urls)})" if wrong_urls else ""
 
 
 def url_other_check(urls):

@@ -92,13 +92,12 @@ def verification_process(dataset, header):
         professions = get_columns_data(row, "profession")
         # TODO: from 2 to 6 only
         line += ",professions" if not profession_check(professions.values()) else ""
-        line += ",Website" if not url_check(row["Website"], "light") else ""
-        line += ",URL_FB_page" if not url_check(row["URL_FB_page"], "strict") else ""
-        line += ",URL_FB_profile" if not url_check(row["URL_FB_profile"], "strict") else ""
-        line += ",URL_IG" if not url_check(row["URL_IG"], "strict") else ""
-        line += ",URL_TW" if not url_check(row["URL_TW"], "strict") else ""
-        url_others = row["URL_others"].split(",")
-        line += url_other_check(url_others)
+        line += url_check(row["Website"].split(','), "light", "Website")
+        line += url_check(row["URL_FB_page"].split(','), "strict", "URL_FB_page")
+        line += url_check(row["URL_FB_profile"].split(','), "strict", "URL_FB_profile")
+        line += url_check(row["URL_IG"].split(','), "strict", "URL_IG")
+        line += url_check(row["URL_TW"].split(','), "strict", "URL_TW")
+        line += url_other_check(row["URL_others"].split(","))
         # If no errors, discard this line
         if line == str(i):
             line = ''
@@ -275,14 +274,15 @@ def make_url_struct(dataset, url_types, current_chamber, persons_count):
         for field in data:
             if re.search(field_pattern, field) and field != "URL_others":
                 if data[field]:
-                    row = {
-                            "url": data[field],
-                            "url_type": get_url_type_id(field, url_types),
-                            "description": '', # TODO
-                            "owner_type": 4 if field == "source_of_truth" else 1, # TODO: persona, partido, coalicion
-                            "owner_id": i + persons_count
-                        }
-                    lines.append(row)
+                    for url in data[field].split(','):
+                        row = {
+                                "url": data[field],
+                                "url_type": get_url_type_id(field, url_types),
+                                "description": '', # TODO
+                                "owner_type": 4 if field == "source_of_truth" else 1, # TODO: persona, partido, coalicion
+                                "owner_id": i + persons_count
+                            }
+                        lines.append(row)
             elif field == "URL_others":
                 for url in data[field].split(","):
                     clean_url = url.strip()
