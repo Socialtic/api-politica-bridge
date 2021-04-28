@@ -160,7 +160,6 @@ def main():
         url_data += url_tmp
         print("\t * Ok.")
     make_banner("Sending data to API")
-    breakpoint()
     # AREA
     print("\t * AREA")
     send_data(API_BASE, 'area', area_data)
