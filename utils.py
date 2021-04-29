@@ -1,6 +1,8 @@
+import os
 import re
 import requests
 import progressbar
+from csv_diff import load_csv, compare
 from requests import exceptions as r_excepts
 from validations import (last_name_check, membership_type_check,
                          date_format_check, url_check, profession_check,
@@ -81,32 +83,34 @@ def row_to_dict(row, header, test_fields=[]):
 def verification_process(dataset, header):
     lines = []
     # Loop to read every row
-    for i, row in enumerate(dataset, start=2):
-        print(f"\t\t -> Checking row #{i} = {row['full_name']}")
-        line = f'{i}'
-        # Tests suite start
-        line += ",last_name" if not last_name_check(row["last_name"] or "") else ""
-        line += ",membership_type" if not membership_type_check(row["membership_type"]) else ""
-        line += ",start_date" if not date_format_check(row["start_date"], "start_end") else ""
-        line += ",end_date" if not date_format_check(row["end_date"], "start_end") else ""
-        line += ",date_birth" if not date_format_check(row["date_birth"], "birth") else ""
-        professions = get_columns_data(row, "profession")
-        # TODO: from 2 to 6 only
-        line += ",professions" if not profession_check(professions.values()) else ""
-        line += url_check(row["Website"].split(','), "light", "Website")
-        line += url_check(row["URL_FB_page"].split(','), "strict", "URL_FB_page")
-        line += url_check(row["URL_FB_profile"].split(','), "strict", "URL_FB_profile")
-        line += url_check(row["URL_IG"].split(','), "strict", "URL_IG")
-        line += url_check(row["URL_TW"].split(','), "strict", "URL_TW")
-        line += url_other_check(row["URL_others"].split(","))
-        # If no errors, discard this line
-        if line == str(i):
-            line = ''
-            continue
-        # Adding candidate name at the end of the line
-        else:
-            line += f",{row['full_name']}"
-            lines.append(line)
+    with progressbar.ProgressBar(max_value=len(dataset)) as bar:
+        for i, row in enumerate(dataset, start=2):
+            #print(f"\t\t -> Checking row #{i} = {row['full_name']}")
+            line = f'{i}'
+            # Tests suite start
+            line += ",last_name" if not last_name_check(row["last_name"] or "") else ""
+            line += ",membership_type" if not membership_type_check(row["membership_type"]) else ""
+            line += ",start_date" if not date_format_check(row["start_date"], "start_end") else ""
+            line += ",end_date" if not date_format_check(row["end_date"], "start_end") else ""
+            line += ",date_birth" if not date_format_check(row["date_birth"], "birth") else ""
+            professions = get_columns_data(row, "profession")
+            # TODO: from 2 to 6 only
+            line += ",professions" if not profession_check(professions.values()) else ""
+            line += url_check(row["Website"].split(','), "light", "Website")
+            line += url_check(row["URL_FB_page"].split(','), "strict", "URL_FB_page")
+            line += url_check(row["URL_FB_profile"].split(','), "strict", "URL_FB_profile")
+            line += url_check(row["URL_IG"].split(','), "strict", "URL_IG")
+            line += url_check(row["URL_TW"].split(','), "strict", "URL_TW")
+            line += url_other_check(row["URL_others"].split(","))
+            # If no errors, discard this line
+            if line == str(i):
+                line = ''
+                continue
+            # Adding candidate name at the end of the line
+            else:
+                line += f",{row['full_name']}"
+                lines.append(line)
+            bar.update(i - 2)
     return lines
 
 
@@ -206,7 +210,7 @@ def make_other_names_struct(dataset, persons_count):
 
 def make_person_profession(dataset, professions, persons_count):
     lines = []
-    pattern = '^profession_[2-6]$'
+    pattern = r'^profession_[2-6]$'
     for i, data in enumerate(dataset, start=1):
         for field in data:
             if re.search(pattern, field):
@@ -239,37 +243,37 @@ def make_membership(dataset, chamber, parties, coalitions, contest_chambers,
                                          contest_chambers),
             "goes_for_coalition": True if data["coalition"] else False,
             "membership_type": Catalogues.MEMBERSHIP_TYPES.index(data["membership_type"]),
-            "goes_for_reelection": False, # Always false
+            "goes_for_reelection": False,  # Always false
             "start_date": data["start_date"], "end_date": data["end_date"],
             "is_substitute": True if data["is_substitute"] == "Sí" else False,
             "parent_membership_id": i if data["is_substitute"] == "Sí" else '',
-            "changed_from_substitute": False, # TODO:
-            "date_changed_from_substitute": "" # TODO:
+            "changed_from_substitute": False,  # TODO:
+            "date_changed_from_substitute": ""  # TODO:
         })
     return lines
 
 
 def get_row_urls(row):
-    pattern = '(^Website$|^URL_(\w)*$)'
+    pattern = r'(^Website$|^URL_(\w)*$)'
     return {field: row[field] for field in row if re.search(pattern, field) and field != "URL_others"}
 
 
 def get_url_type_id(field, url_types, url=""):
-    email_pattern = '^[\w.+-]+@[\w-]+\.[\w.-]+$'
+    email_pattern = r'^[\w.+-]+@[\w-]+\.[\w.-]+$'
     if field == "URL_others":
         for u_type in url_types:
             if u_type.lower() in url:
                 return url_types.index(u_type) + 1
             elif re.search(email_pattern, url):
-                return url_types.index("EMAIL") + 1
+                return url_types.index("email") + 1
         return 0
     else:
-        return url_types.index(Catalogues.URL_TYPES[field]) + 1
+        return url_types.index(Catalogues.URL_TYPES[field].lower()) + 1
 
 
 def make_url_struct(dataset, url_types, current_chamber, persons_count):
     lines = []
-    field_pattern = '(^Website$|^URL_(\w)*$)'
+    field_pattern = r'(^Website$|^URL_(\w)*$)'
 
     for i, data in enumerate(dataset, start=1):
         for field in data:
@@ -279,8 +283,8 @@ def make_url_struct(dataset, url_types, current_chamber, persons_count):
                         row = {
                                 "url": data[field],
                                 "url_type": get_url_type_id(field, url_types),
-                                "description": '', # TODO
-                                "owner_type": 4 if field == "source_of_truth" else 1, # TODO: persona, partido, coalicion
+                                "description": '',  # TODO
+                                "owner_type": 4 if field == "source_of_truth" else 1,  # TODO: persona, partido, coalicion
                                 "owner_id": i + persons_count
                             }
                         lines.append(row)
@@ -291,8 +295,8 @@ def make_url_struct(dataset, url_types, current_chamber, persons_count):
                         row = {
                             "url": clean_url,
                             "url_type": get_url_type_id(field, url_types, url),
-                            "description": '', # TODO
-                            "owner_type": 1, # TODO: persona, partido, coalicion
+                            "description": '',  # TODO
+                            "owner_type": 1,  # TODO: persona, partido, coalicion
                             "owner_id": i + persons_count
                         }
                         lines.append(row)
@@ -320,3 +324,14 @@ def send_data(base_url, endpoint, dataset):
             if not response["success"]:
                 print(f"[ERROR]: {endpoint} #{i} {r.json()['error']}")
             bar.update(i - 2)
+
+
+def update_data(base_url, endpoint, dataset):
+    pass
+
+
+def changes_tracker(files_path):
+    files = os.listdir(files_path)
+    for csv_file in files:
+        if csv_file.endswith(".csv"):
+            pass
