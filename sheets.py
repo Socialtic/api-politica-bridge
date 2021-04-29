@@ -6,6 +6,7 @@ sheet = spreadsheet_service.spreadsheets()
 
 
 def sheet_reader(sheet_id, read_range, as_list=False):
+    print(f"\t\t* Reading {read_range.split('!')[0]}")
     result = sheet.values().get(spreadsheetId=sheet_id,
                                 range=read_range).execute()
     values = result.get('values', [])

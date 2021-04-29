@@ -1,5 +1,6 @@
 import re
 import requests
+import progressbar
 from requests import exceptions as r_excepts
 from validations import (last_name_check, membership_type_check,
                          date_format_check, url_check, profession_check,
@@ -81,7 +82,7 @@ def verification_process(dataset, header):
     lines = []
     # Loop to read every row
     for i, row in enumerate(dataset, start=2):
-        print(f"Checking row #{i} = {row['full_name']}")
+        print(f"\t\t -> Checking row #{i} = {row['full_name']}")
         line = f'{i}'
         # Tests suite start
         line += ",last_name" if not last_name_check(row["last_name"] or "") else ""
@@ -307,13 +308,15 @@ def colors_to_list(data):
 
 def send_data(base_url, endpoint, dataset):
     full_url = base_url + endpoint
-    for i, row in enumerate(dataset, start=2):
-        try:
-            # Sending row data to api
-            r = requests.post(full_url, json=row)
-        except r_excepts.ConnectionError:
-            print("[CONNECTION ERROR]")
-            print(f"#{i} | url: {full_url} | data:{row}")
-        response = r.json()
-        if not response["success"]:
-            print(f"[ERROR]: {endpoint} #{i} {r.json()['error']}")
+    with progressbar.ProgressBar(max_value=len(dataset)) as bar:
+        for i, row in enumerate(dataset, start=2):
+            try:
+                # Sending row data to api
+                r = requests.post(full_url, json=row)
+            except r_excepts.ConnectionError:
+                print("[CONNECTION ERROR]")
+                print(f"#{i} | url: {full_url} | data:{row}")
+            response = r.json()
+            if not response["success"]:
+                print(f"[ERROR]: {endpoint} #{i} {r.json()['error']}")
+            bar.update(i - 2)

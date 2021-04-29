@@ -15,7 +15,7 @@ READ_RANGES = ["Gubernaturas!A1:AB114",
 # Struct read ranges
 STRUCT_READ_RANGES = {
     "area": "B1:H376", "chamber": "B1:C358", "role": "B1:F358",
-    "coalition": "B1:D36", "party": "B1:F78",
+    "coalition": "B1:D37", "party": "B1:F78",
     "profession": "B1:B119", "contest": "B1:G358"
     # "past-membership": "A1:G1",
     }
@@ -47,7 +47,7 @@ def main():
     coalition_data = sheet_reader(STRUCT_SHEET_ID,
                                   f"Table coalition!{STRUCT_READ_RANGES['coalition']}")
     coalition_data = colors_to_list(coalition_data)
-    coalitions = sheet_reader(STRUCT_SHEET_ID, "Table coalition!B2:B36",
+    coalitions = sheet_reader(STRUCT_SHEET_ID, "Table coalition!B2:B37",
                               as_list=True)
     coalitions = [c[0].lower().strip() for c in coalitions]
     # PARTY
@@ -77,13 +77,12 @@ def main():
     # Dynamic data containers
     person_data, other_names_data, person_profession_data = [], [], []
     membership_data, url_data = [], []
-    print("\t OK.")
     # Main loop throught sheet pages
     for read_range in READ_RANGES:
         current_chamber = read_range.split('!')[0].lower()
         # Getting sheet data as list of list
         dataset = sheet_reader(CAPTURE_SHEET_ID, read_range)
-        make_banner(f"{current_chamber} = {len(dataset)}")
+        make_banner(f"{current_chamber.upper()} = {len(dataset)}")
         # Getting header
         header = dataset[0].keys()
         # Start capture verification
@@ -195,7 +194,7 @@ def main():
     # URL
     print("\t * URL")
     send_data(API_BASE, 'url', url_data)
-
+    make_banner("Finish. Have a nice day :)")
 
 if __name__ == "__main__":
     main()
