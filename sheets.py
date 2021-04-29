@@ -11,7 +11,7 @@ def sheet_reader(sheet_id, read_range, as_list=False):
                                 range=read_range).execute()
     values = result.get('values', [])
     if as_list:
-        return values if values else []
+        return [v[0].lower().strip() for v in values] if values else []
     else:
         header = values.pop(0)
         if values:

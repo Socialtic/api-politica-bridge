@@ -49,31 +49,24 @@ def main():
     coalition_data = colors_to_list(coalition_data)
     coalitions = sheet_reader(STRUCT_SHEET_ID, "Table coalition!B2:B37",
                               as_list=True)
-    coalitions = [c[0].lower().strip() for c in coalitions]
     # PARTY
     party_data = sheet_reader(STRUCT_SHEET_ID,
                               f"Table party!{STRUCT_READ_RANGES['party']}")
     party_data = colors_to_list(party_data)
     parties = sheet_reader(STRUCT_SHEET_ID, "Table party!C2:C78", as_list=True)
-    # Parties is a list of lists. Getting party string
-    parties = [p[0].lower() for p in parties]
     # CONTEST
     contest_data = sheet_reader(STRUCT_SHEET_ID,
                                 f"Table contest!{STRUCT_READ_RANGES['contest']}")
     contest_chambers = sheet_reader(STRUCT_SHEET_ID, "Table contest!C2:C358",
                                     as_list=True)
-    contest_chambers = [cc[0].lower() for cc in contest_chambers]
     # PROFESSION
     profession_data = sheet_reader(STRUCT_SHEET_ID,
                                    f"Catalogue profession!{STRUCT_READ_RANGES['profession']}")
     professions_catalogue = sheet_reader(STRUCT_SHEET_ID,
                                          "Catalogue profession!B2:B119",
                                          as_list=True)
-    # Professions is a list of lists. Getting only proferssion string
-    professions_catalogue = [pc[0].lower() for pc in professions_catalogue]
     url_types = sheet_reader(STRUCT_SHEET_ID,
                              "Catalogue url_types!B2:B23", as_list=True)
-    url_types = [u[0] for u in url_types]
     # Dynamic data containers
     person_data, other_names_data, person_profession_data = [], [], []
     membership_data, url_data = [], []
@@ -195,6 +188,7 @@ def main():
     print("\t * URL")
     send_data(API_BASE, 'url', url_data)
     make_banner("Finish. Have a nice day :)")
+
 
 if __name__ == "__main__":
     main()
