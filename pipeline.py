@@ -1,30 +1,17 @@
 from sheets import sheet_reader
+from static_tables import (area_data, chamber_data, role_data, coalition_data,
+                           coalitions_catalogue, party_data, parties,
+                           contest_data, contest_chambers, profession_data,
+                           professions_catalogue, url_types)
 from utils import (make_banner, verification_process,
                    write_csv, make_table, make_person_struct,
                    make_other_names_struct, make_person_profession,
-                   make_membership, make_url_struct, colors_to_list,
-                   send_data)
+                   make_membership, make_url_struct, send_data)
 # ID sheets
 CAPTURE_SHEET_ID = "1mk9LTI5RBYwrEPzILeDY925VJbLVmEoZyRzaa1gZ_hk"
-STRUCT_SHEET_ID = "1fKXpwXhKlLLG-kjh8udQIH9poNLs7kAzSnXndZ1Le4Y"
 # Capture Read Ranges
-READ_RANGES = ["Gubernaturas!A1:AB114",
-               "Alcaldías!A1:AC131",
-               "Diputaciones!A1:AD1370"
-               ]
-# Struct read ranges
-STRUCT_READ_RANGES = {
-    "area": "B1:H376", "chamber": "B1:C358", "role": "B1:F358",
-    "coalition": "B1:D37", "party": "B1:F78",
-    "profession": "B1:B119", "contest": "B1:G358"
-    # "past-membership": "A1:G1",
-    }
-# Only test in this columns
-TEST_FIELDS = ["last_name", "membership_type", "start_date", "end_date",
-               "date_birth", "profession_2", "profession_3",
-               "profession_4", "profession_5", "profession_6", "Website",
-               "URL_FB_page", "URL_FB_profile", "URL_IG", "URL_TW",
-               "URL_others"]
+CP_RANGES = ["Gubernaturas!A1:AB114", "Alcaldías!A1:AC131",
+             "Diputaciones!A1:AD1370"]
 API_BASE = 'http://localhost:5000/'
 # API endpoints
 ENDPOINTS = ["area", "chamber", "role", "coalition", "party", "person",
@@ -32,62 +19,27 @@ ENDPOINTS = ["area", "chamber", "role", "coalition", "party", "person",
 
 
 def main():
-    make_banner("Pipeline Start")
-    print("\t * Getting static tables data")
-    # AREA
-    area_data = sheet_reader(STRUCT_SHEET_ID,
-                             f"Table area!{STRUCT_READ_RANGES['area']}")
-    # CHAMBER
-    chamber_data = sheet_reader(STRUCT_SHEET_ID,
-                                f"Table chamber!{STRUCT_READ_RANGES['chamber']}")
-    # ROLE
-    role_data = sheet_reader(STRUCT_SHEET_ID,
-                             f"Table role!{STRUCT_READ_RANGES['role']}")
-    # COALITION
-    coalition_data = sheet_reader(STRUCT_SHEET_ID,
-                                  f"Table coalition!{STRUCT_READ_RANGES['coalition']}")
-    coalition_data = colors_to_list(coalition_data)
-    coalitions = sheet_reader(STRUCT_SHEET_ID, "Table coalition!B2:B37",
-                              as_list=True)
-    # PARTY
-    party_data = sheet_reader(STRUCT_SHEET_ID,
-                              f"Table party!{STRUCT_READ_RANGES['party']}")
-    party_data = colors_to_list(party_data)
-    parties = sheet_reader(STRUCT_SHEET_ID, "Table party!C2:C78", as_list=True)
-    # CONTEST
-    contest_data = sheet_reader(STRUCT_SHEET_ID,
-                                f"Table contest!{STRUCT_READ_RANGES['contest']}")
-    contest_chambers = sheet_reader(STRUCT_SHEET_ID, "Table contest!C2:C358",
-                                    as_list=True)
-    # PROFESSION
-    profession_data = sheet_reader(STRUCT_SHEET_ID,
-                                   f"Catalogue profession!{STRUCT_READ_RANGES['profession']}")
-    professions_catalogue = sheet_reader(STRUCT_SHEET_ID,
-                                         "Catalogue profession!B2:B119",
-                                         as_list=True)
-    url_types = sheet_reader(STRUCT_SHEET_ID,
-                             "Catalogue url_types!B2:B23", as_list=True)
     # Dynamic data containers
     person_data, other_names_data, person_profession_data = [], [], []
     membership_data, url_data = [], []
+    make_banner("VERIFICATIONS")
     # Main loop throught sheet pages
-    for read_range in READ_RANGES:
+    for read_range in CP_RANGES:
         current_chamber = read_range.split('!')[0].lower()
         # Getting sheet data as list of list
         dataset = sheet_reader(CAPTURE_SHEET_ID, read_range)
-        make_banner(f"{current_chamber.upper()} = {len(dataset)}")
         # Getting header
         header = dataset[0].keys()
         # Start capture verification
-        print("\t * Tests Suite begin")
+        print(f"\t * Test {len(dataset)} rows from {current_chamber.upper()}")
         error_lines = verification_process(dataset, header)
         if error_lines:
             # Writing report
             write_csv("\n".join(error_lines),
                       f"{current_chamber}_errors")
-            print(f"\n\t ** {len(error_lines)} lines failed at {current_chamber} **")
+            print(f"\n\t ** {len(error_lines)} fails at {current_chamber} **")
         else:
-            print("\t Ok.")
+            print(f"\t {current_chamber} OK. ")
 
         # PREPROCESSING DYNAMIC DATA
         print("\t * Build dynamic data")
@@ -134,7 +86,7 @@ def main():
                              "parent_membership_id", "changed_from_substitute",
                              "date_changed_from_substitute"]
         membership_tmp = make_membership(dataset, current_chamber,
-                                         parties, coalitions,
+                                         parties, coalitions_catalogue,
                                          contest_chambers, membership_header,
                                          person_count)
         membership_table = make_table(membership_header, membership_tmp)
