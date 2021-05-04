@@ -126,7 +126,7 @@ def write_csv(data, name):
 
 def read_csv(file_name, path=""):
     full_path = os.path.join(path, file_name)
-    with open(full_path, "r", encoding="utf-8") as f:
+    with open(full_path + ".csv", "r", encoding="utf-8") as f:
         return [line.split(",") for line in f.read().rstrip("\n").split("\n")]
 
 
@@ -393,7 +393,7 @@ def search_by_name(dataset, prediction_name):
     :returns: TODO
 
     """
-    for row in dataset:
+    for i, row in enumerate(dataset):
         if row["full_name"] == prediction_name:
-            return row
-    return {}
+            return i + 1, row
+    return -1, {}
