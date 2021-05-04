@@ -2,11 +2,11 @@ import os
 import re
 import requests
 import progressbar
-from csv_diff import load_csv, compare
 from requests import exceptions as r_excepts
 from validations import (last_name_check, membership_type_check,
                          date_format_check, url_check, profession_check,
                          url_other_check)
+
 
 
 class Catalogues:
@@ -124,6 +124,12 @@ def write_csv(data, name):
         f.write(data)
 
 
+def read_csv(file_name, path=""):
+    full_path = os.path.join(path, file_name)
+    with open(full_path, "r", encoding="utf-8") as f:
+        return [line.split(",") for line in f.read().rstrip("\n").split("\n")]
+
+
 def my_str_to_bool(row, endpoint):
     p_fields = ["dead_or_alive"]
     m_fields = ["goes_for_coalition", "goes_for_reelection", "is_substitute", "changed_from_substitute"]
@@ -140,7 +146,11 @@ def make_table(header, dataset):
     table = ','.join(header) + '\n'
     for row_data in dataset:
         for field in header:
-            table += f"{row_data[field]},"
+            cell = row_data[field].strip("\r\n ")
+            if ',' in row_data[field] :
+                table += f'"{cell}",'
+            else:
+                table += f'{cell},'
         table += '\n'
     return table
 
@@ -326,12 +336,64 @@ def send_data(base_url, endpoint, dataset):
             bar.update(i - 2)
 
 
-def update_data(base_url, endpoint, dataset):
-    pass
+def send_new_data(field, changes, api_base, dataset, person_id):
+    """TODO: Docstring for send_new_data.
+    :returns: TODO
+
+    """
+    url_pattern = r'(^Website$|^source_of_truth$|^URL_(\w)*$)'
+    # Tables to modify: other-name
+    breakpoint()
+    if field == "nickname":
+        endpoint = "other-name"
+        r = requests.get(api_base + endpoint)
+        other_name_data = r.json()["other_names"]
+        new_data = {
+            "name": changes[1],
+            "other_name_type_id": 2, # TODO
+            "person_id": person_id
+        }
+        for name in other_name_data:
+            if person_id == name["person_id"]:
+                other_name_id = name["id"]
+                r = requests.put(f"{api_base}{endpoint}/{other_name_id}",
+                                 data=new_data)
+                return True
+        # It's a new nickname
+        r = requests.post(api_base + endpoint, json=new_data)
+        if not r["success"]:
+            print(f"[ERROR]: {endpoint} person #{person_id} {r.json()['error']}")
+            return False
+    elif field in ["start_date", "end_date"]:
+        endpoint = "membership"
+        r = requests.get(api_base + endpoint)
+        memberships = r.json()["memberships"]
+        for membership in memberships:
+            if person_id == membership["person_id"]:
+                membership_id = membership["id"]
+                membership[field] = changes[1]
+                r = requests.put(f"{api_base}{endpoint}/{membership_id}",
+                                 data=membership)
+    elif re.search(url_pattern, field):
+        endpoint = "url"
+        r = requests.get(api_base + endpoint)
+        urls = r.json()["urls"]
+        for url in urls:
+            if person_id == url["owner_id"]:
+                url["url"] = changes[1]
+                r = requests.put(f"{api_base}{endpoint}/{membership_id}",
+                                 data=url)
+        # TODO: It's a new URL
+        # TODO: get URL type
+    return True
 
 
-def changes_tracker(files_path):
-    files = os.listdir(files_path)
-    for csv_file in files:
-        if csv_file.endswith(".csv"):
-            pass
+def search_by_name(dataset, prediction_name):
+    """TODO: Docstring for search_by_name.
+    :returns: TODO
+
+    """
+    for row in dataset:
+        if row["full_name"] == prediction_name:
+            return row
+    return {}
