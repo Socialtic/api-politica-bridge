@@ -8,7 +8,6 @@ from validations import (last_name_check, membership_type_check,
                          url_other_check)
 
 
-
 class Catalogues:
     DEGREES_OF_STUDIES = ['', 'ELEMENTARY', 'HIGH SCHOOL', 'ASSOCIATE DEGREE',
                           'BACHELOR’S DEGREE',
@@ -25,10 +24,14 @@ class Catalogues:
     #   GOBERNADOR, DIPUTADO , PRESIDENTE MUNICIPAL
     ROLE_TYPES = ['', 'governmentOfficer', 'legislatorLowerBody',
                   'executiveCouncil']
+    SPANISH_ROLES = {'governmentOfficer': "gubernatura",
+                     "executiveCouncil": "presidencia",
+                     "legislatorLowerBody": "diputación"}
     URL_TYPES = {"Website": "WEBSITE_OFFICIAL",
                  "URL_FB_page": "FACEBOOK_CAMPAIGN",
                  "URL_FB_profile": "FACEBOOK_PERSONAL",
                  "URL_IG": "INSTAGRAM_CAMPAIGN", "URL_TW": "TWITTER",
+                 "URL_photo": "PHOTO",
                  "source_of_truth": "SOURCE_OF_TRUTH"}
 
 
@@ -85,7 +88,7 @@ def verification_process(dataset, header):
     # Loop to read every row
     with progressbar.ProgressBar(max_value=len(dataset)) as bar:
         for i, row in enumerate(dataset, start=2):
-            #print(f"\t\t -> Checking row #{i} = {row['full_name']}")
+            # print(f"\t\t -> Checking row #{i} = {row['full_name']}")
             line = f'{i}'
             # Tests suite start
             line += ",last_name" if not last_name_check(row["last_name"] or "") else ""
@@ -146,48 +149,35 @@ def make_table(header, dataset):
     table = ','.join(header) + '\n'
     for row_data in dataset:
         for field in header:
-            cell = row_data[field].strip("\r\n ")
-            if ',' in row_data[field] :
-                table += f'"{cell}",'
-            else:
-                table += f'{cell},'
+            try:
+                cell = row_data[field].strip("\r\n ")
+                if ',' in row_data[field] :
+                    table += f'"{cell}",'
+                else:
+                    table += f'{cell},'
+            except AttributeError:
+                table += f"{row_data[field]},"
         table += '\n'
     return table
 
 
-def get_contest_id(data, current_chamber, contest_chambers):
-    if current_chamber == "gubernatura":
+def get_contest_id(data, contest_chambers):
+    # Gubernaturas
+    if data["role_type"] == "governmentOfficer":
         location = data["state"].lower()
-    elif current_chamber == "presidencia":
+    # Alcaldías (presidencia)
+    elif data["role_type"] == "executiveCouncil":
         location = data["area"].lower()
-    elif current_chamber == "diputación":
-        location = f"distrito federal {data['city']} de {data['state'].lower()}"
+    # Diputación
+    elif data["role_type"] == "legislatorLowerBody":
+        location = f"distrito federal {data['area']} de {data['state'].lower()}"
     for i, contest_chamber in enumerate(contest_chambers, start=1):
-        if location in contest_chamber and current_chamber in contest_chamber:
+        if location in contest_chamber and Catalogues.SPANISH_ROLES[data["role_type"]] in contest_chamber:
             return i
 
 
-def get_role_name(chamber):
-    if chamber == "gubernaturas":
-        return "governmentOfficer"
-    elif chamber == "alcaldías":
-        return "executiveCouncil"
-    else:
-        return "legislatorLowerBody"
-
-
-def get_contest_name(chamber):
-    if chamber == "gubernaturas":
-        return "gubernatura"
-    elif chamber == "alcaldías":
-        return "presidencia"
-    else:
-        return "diputación"
-
-
-def make_person_struct(dataset, chamber, contest_chambers, header):
+def make_person_struct(dataset, contest_chambers, header):
     people = []
-    contest_chamber = get_contest_name(chamber)
     for data in dataset:
         row = dict()
         for field in header:
@@ -199,26 +189,25 @@ def make_person_struct(dataset, chamber, contest_chambers, header):
                 last_degree = data[field].upper()
                 row[field] = Catalogues.DEGREES_OF_STUDIES.index(last_degree)
             elif field == "contest_id":
-                row[field] = get_contest_id(data, contest_chamber,
-                                            contest_chambers)
+                row[field] = get_contest_id(data, contest_chambers)
             else:
                 row[field] = data[field]
         people.append(row)
     return people
 
 
-def make_other_names_struct(dataset, persons_count):
+def make_other_names_struct(dataset):
     result = []
     for i, data in enumerate(dataset, start=1):
         # TODO: check multinickname case
         if data["nickname"]:
             result.append({"other_name_type": 2,
                            "name": data["nickname"],
-                           "person_id": i + persons_count})
+                           "person_id": i})
     return result
 
 
-def make_person_profession(dataset, professions, persons_count):
+def make_person_profession(dataset, professions):
     lines = []
     pattern = r'^profession_[2-6]$'
     for i, data in enumerate(dataset, start=1):
@@ -228,29 +217,25 @@ def make_person_profession(dataset, professions, persons_count):
                 if profession:
                     profession_id = professions.index(profession) + 1
                     lines.append({
-                        "person_id": i + persons_count,
+                        "person_id": i,
                         "profession_id": profession_id
                     })
     return lines
 
 
-def make_membership(dataset, chamber, parties, coalitions, contest_chambers,
-                    header, persons_count):
+def make_membership(dataset, parties, coalitions, contest_chambers, header):
     lines = []
-    contest_chamber = get_contest_name(chamber)
-    current_role = get_role_name(chamber)
     for i, data in enumerate(dataset, start=1):
         if data["coalition"]:
             coalition_id = coalitions.index(data["coalition"].lower().strip()) + 1
         else:
             coalition_id = ''
         lines.append({
-            "person_id": i + persons_count,
-            "role_id": Catalogues.ROLE_TYPES.index(current_role),
+            "person_id": i,
+            "role_id": Catalogues.ROLE_TYPES.index(data["role_type"]),
             "party_id": parties.index(data["abbreviation"].lower()) + 1,
             "coalition_id": coalition_id,
-            "contest_id": get_contest_id(data, contest_chamber,
-                                         contest_chambers),
+            "contest_id": get_contest_id(data, contest_chambers),
             "goes_for_coalition": True if data["coalition"] else False,
             "membership_type": Catalogues.MEMBERSHIP_TYPES.index(data["membership_type"]),
             "goes_for_reelection": False,  # Always false
@@ -281,10 +266,9 @@ def get_url_type_id(field, url_types, url=""):
         return url_types.index(Catalogues.URL_TYPES[field].lower()) + 1
 
 
-def make_url_struct(dataset, url_types, current_chamber, persons_count):
+def make_url_struct(dataset, url_types):
     lines = []
     field_pattern = r'(^Website$|^URL_(\w)*$)'
-
     for i, data in enumerate(dataset, start=1):
         for field in data:
             if re.search(field_pattern, field) and field != "URL_others":
@@ -295,7 +279,7 @@ def make_url_struct(dataset, url_types, current_chamber, persons_count):
                                 "url_type": get_url_type_id(field, url_types),
                                 "description": '',  # TODO
                                 "owner_type": 4 if field == "source_of_truth" else 1,  # TODO: persona, partido, coalicion
-                                "owner_id": i + persons_count
+                                "owner_id": i
                             }
                         lines.append(row)
             elif field == "URL_others":
@@ -304,10 +288,10 @@ def make_url_struct(dataset, url_types, current_chamber, persons_count):
                     if clean_url:
                         row = {
                             "url": clean_url,
-                            "url_type": get_url_type_id(field, url_types, url),
+                            "url_type": get_url_type_id(field, url_types, clean_url),
                             "description": '',  # TODO
                             "owner_type": 1,  # TODO: persona, partido, coalicion
-                            "owner_id": i + persons_count
+                            "owner_id": i
                         }
                         lines.append(row)
     return lines

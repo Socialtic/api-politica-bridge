@@ -70,8 +70,8 @@ def url_other_check(urls):
     email_pattern = '^[\w.+-]+@[\w-]+\.[\w.-]+$'
     url_pattern = '^http[s]?:\/\/(w{3}\.)?\w+[.\w]+(\/[\w.?%=@&-]+)*$'
     pattern = f'({email_pattern}|{url_pattern}|^$)'
-    wrong_urls = [str(i) for i, url in enumerate(urls, start=1) if not re.search(pattern, url.strip())]
-    return f",URL_others({','.join(wrong_urls)})" if wrong_urls else ""
+    wrong_urls = [str(i+1) for i, url in enumerate(urls, start=1) if not re.search(pattern, url)]
+    return f",URL_others({'|'.join(wrong_urls)})" if wrong_urls else ""
 
 
 def profession_check(professions):
