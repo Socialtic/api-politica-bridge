@@ -174,6 +174,7 @@ def get_contest_id(data, contest_chambers):
     for i, contest_chamber in enumerate(contest_chambers, start=1):
         if location in contest_chamber and Catalogues.SPANISH_ROLES[data["role_type"]] in contest_chamber:
             return i
+    return -1
 
 
 def make_person_struct(dataset, contest_chambers, header):
@@ -186,10 +187,18 @@ def make_person_struct(dataset, contest_chambers, header):
             elif field == "dead_or_alive":
                 row[field] = True if data[field] == "Vivo" else False
             elif field == "last_degree_of_studies":
-                last_degree = data[field].upper()
-                row[field] = Catalogues.DEGREES_OF_STUDIES.index(last_degree)
+                if data[field]:
+                    last_degree = data[field].upper()
+                    row[field] = Catalogues.DEGREES_OF_STUDIES.index(last_degree)
+                else:
+                    row[field] = -1
             elif field == "contest_id":
                 row[field] = get_contest_id(data, contest_chambers)
+            elif field == "date_birth":
+                if data[field]:
+                    row[field] = data[field]
+                else:
+                    row[field] = '0001-01-01'
             else:
                 row[field] = data[field]
         people.append(row)
@@ -201,9 +210,11 @@ def make_other_names_struct(dataset):
     for i, data in enumerate(dataset, start=1):
         # TODO: check multinickname case
         if data["nickname"]:
-            result.append({"other_name_type": 2, # TODO
-                           "name": data["nickname"],
-                           "person_id": i})
+            result.append({
+                "other_name_type": 2, # TODO
+                "name": data["nickname"],
+                "person_id": i
+            })
     return result
 
 
@@ -229,7 +240,7 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header):
         if data["coalition"]:
             coalition_id = coalitions.index(data["coalition"].lower().strip()) + 1
         else:
-            coalition_id = ''
+            coalition_id = -1
         lines.append({
             "person_id": i,
             "role_id": Catalogues.ROLE_TYPES.index(data["role_type"]),
@@ -241,9 +252,9 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header):
             "goes_for_reelection": False,  # Always false
             "start_date": data["start_date"], "end_date": data["end_date"],
             "is_substitute": True if data["is_substitute"] == "Sí" else False,
-            "parent_membership_id": i if data["is_substitute"] == "Sí" else '',
+            "parent_membership_id": i if data["is_substitute"] == "Sí" else -1,
             "changed_from_substitute": False,  # TODO:
-            "date_changed_from_substitute": ""  # TODO:
+            "date_changed_from_substitute": "0001-01-01"  # TODO:
         })
     return lines
 
@@ -305,8 +316,8 @@ def colors_to_list(data):
 
 
 def send_data(base_url, endpoint, dataset):
-    full_url = base_url + endpoint
-    with progressbar.ProgressBar(max_value=len(dataset)) as bar:
+    full_url = base_url + endpoint + '/'
+    with progressbar.ProgressBar(max_value=len(dataset), redirect_stdout=True) as bar:
         for i, row in enumerate(dataset, start=2):
             try:
                 # Sending row data to api
@@ -314,9 +325,9 @@ def send_data(base_url, endpoint, dataset):
             except r_excepts.ConnectionError:
                 print("[CONNECTION ERROR]")
                 print(f"#{i} | url: {full_url} | data:{row}")
-            response = r.json()
-            if not response["success"]:
-                print(f"[ERROR]: {endpoint} #{i} {r.json()['error']}")
+            if r.status_code != 201:
+                print(f"[ERROR]: {endpoint} #{i} status code: {r.status_code}")
+                print(f"msg: {r.json()['message']}")
             bar.update(i - 2)
 
 
@@ -334,7 +345,6 @@ def send_new_data(field, changes, api_base, dataset, person_id):
         for name in other_name_data:
             # TODO: Multi nicknames
             if person_id == str(name["person_id"]):
-                breakpoint()
                 name["name"] = changes[1]
                 other_type = Catalogues.OTHER_NAMES_TYPES.index(name["other_name_type_id"])
                 name["other_name_type"] = other_type
@@ -342,7 +352,6 @@ def send_new_data(field, changes, api_base, dataset, person_id):
                 r = requests.put(full_endpoint, json=name)
                 return r
         # It's a new nickname
-        breakpoint()
         new_data = {
             "name": changes[1],
             "other_name_type": 2, # TODO
