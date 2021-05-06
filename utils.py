@@ -201,7 +201,7 @@ def make_other_names_struct(dataset):
     for i, data in enumerate(dataset, start=1):
         # TODO: check multinickname case
         if data["nickname"]:
-            result.append({"other_name_type": 2,
+            result.append({"other_name_type": 2, # TODO
                            "name": data["nickname"],
                            "person_id": i})
     return result
@@ -327,27 +327,29 @@ def send_new_data(field, changes, api_base, dataset, person_id):
     """
     url_pattern = r'(^Website$|^source_of_truth$|^URL_(\w)*$)'
     # Tables to modify: other-name
-    breakpoint()
     if field == "nickname":
         endpoint = "other-name"
         r = requests.get(api_base + endpoint)
         other_name_data = r.json()["other_names"]
+        for name in other_name_data:
+            # TODO: Multi nicknames
+            if person_id == str(name["person_id"]):
+                breakpoint()
+                name["name"] = changes[1]
+                other_type = Catalogues.OTHER_NAMES_TYPES.index(name["other_name_type_id"])
+                name["other_name_type"] = other_type
+                full_endpoint = f"{api_base}{endpoint}/{name['id']}"
+                r = requests.put(full_endpoint, json=name)
+                return r
+        # It's a new nickname
+        breakpoint()
         new_data = {
             "name": changes[1],
-            "other_name_type_id": 2, # TODO
+            "other_name_type": 2, # TODO
             "person_id": person_id
         }
-        for name in other_name_data:
-            if person_id == name["person_id"]:
-                other_name_id = name["id"]
-                r = requests.put(f"{api_base}{endpoint}/{other_name_id}",
-                                 data=new_data)
-                return True
-        # It's a new nickname
         r = requests.post(api_base + endpoint, json=new_data)
-        if not r["success"]:
-            print(f"[ERROR]: {endpoint} person #{person_id} {r.json()['error']}")
-            return False
+        return r
     elif field in ["start_date", "end_date"]:
         endpoint = "membership"
         r = requests.get(api_base + endpoint)
@@ -358,6 +360,8 @@ def send_new_data(field, changes, api_base, dataset, person_id):
                 membership[field] = changes[1]
                 r = requests.put(f"{api_base}{endpoint}/{membership_id}",
                                  data=membership)
+                return r
+        return {"error": f"person #{person_id} not found", "success": False}
     elif re.search(url_pattern, field):
         endpoint = "url"
         r = requests.get(api_base + endpoint)
