@@ -11,6 +11,8 @@ from utils import (make_banner, verification_process,
 CAPTURE_SHEET_ID = "1mk9LTI5RBYwrEPzILeDY925VJbLVmEoZyRzaa1gZ_hk"
 # Capture Read Ranges
 READ_RANGE = "TODO!A1:AG2441"
+PARTY_URL_RANGE = "URL_logo_partido_coal!H1:P62"
+COALITION_URL_RANGE = "URL_logo_partido_coal!A1:G37"
 
 API_BASE = 'http://localhost:5000/'
 # API endpoints
@@ -80,6 +82,14 @@ def main():
     url_header = ["url", "description", "url_type", "owner_type",
                     "owner_id"]
     url_data = make_url_struct(dataset, url_types)
+    # Getting parties and coalition URLs
+    party_url = sheet_reader(CAPTURE_SHEET_ID, PARTY_URL_RANGE)
+    coalition_url = sheet_reader(CAPTURE_SHEET_ID, COALITION_URL_RANGE)
+
+    url_data += make_url_struct(party_url, url_types, coalition_data,
+                                party_data, "party")
+    url_data += make_url_struct(coalition_url, url_types, coalition_data,
+                                party_data, "coalition")
     url_table = make_table(url_header, url_data)
     write_csv(url_table, f"dataset/url")
     print("\t * Ok.")

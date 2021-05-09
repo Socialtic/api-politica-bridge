@@ -31,8 +31,8 @@ class Catalogues:
                  "URL_FB_page": "FACEBOOK_CAMPAIGN",
                  "URL_FB_profile": "FACEBOOK_PERSONAL",
                  "URL_IG": "INSTAGRAM_CAMPAIGN", "URL_TW": "TWITTER",
-                 "URL_photo": "PHOTO",
-                 "source_of_truth": "SOURCE_OF_TRUTH"}
+                 "URL_photo": "PHOTO", "source_of_truth": "SOURCE_OF_TRUTH",
+                 "URL_logo": "LOGO"}
 
 
 def make_banner(title):
@@ -277,34 +277,66 @@ def get_url_type_id(field, url_types, url=""):
         return url_types.index(Catalogues.URL_TYPES[field].lower()) + 1
 
 
-def make_url_struct(dataset, url_types):
+def get_owner_id(dataset, field_data, search_field):
+    """TODO: Docstring for get_owner_type.
+    :returns: TODO
+
+    """
+    for i, data in enumerate(dataset, start=1):
+        if data[search_field].lower() == field_data.lower():
+            return i
+    return -1
+
+
+def make_url_struct(dataset, url_types, coalitions=[], parties=[], owner_type=""):
     lines = []
     field_pattern = r'(^Website$|^URL_(\w)*$)'
-    for i, data in enumerate(dataset, start=1):
-        for field in data:
-            if re.search(field_pattern, field) and field != "URL_others":
-                if data[field]:
-                    for url in data[field].split(','):
-                        row = {
+    if owner_type in ["coalition", "party"]:
+        for data in dataset:
+            for field in data:
+                if re.search(field_pattern, field):
+                    if data[field]:
+                        for url in data[field].split(","):
+                            if owner_type == "coalition":
+                                owner_id = get_owner_id(coalitions, data["Coalicion"],
+                                                        "name")
+                            else:
+                                owner_id = get_owner_id(parties, data["Abreviacion"],
+                                                        "abbreviation")
+                            lines.append({
                                 "url": data[field],
                                 "url_type": get_url_type_id(field, url_types),
+                                "description": "",
+                                "owner_type": 3 if owner_type == "coalition" else 2,
+                                "owner_id": owner_id
+                            })
+    # Person  or membership
+    else:
+        for i, data in enumerate(dataset, start=1):
+            for field in data:
+                if re.search(field_pattern, field) and field != "URL_others":
+                    if data[field]:
+                        for url in data[field].split(','):
+                            row = {
+                                    "url": data[field],
+                                    "url_type": get_url_type_id(field, url_types),
+                                    "description": '',  # TODO
+                                    "owner_type": 4 if field == "source_of_truth" else 1,  # TODO: persona, partido, coalicion
+                                    "owner_id": i
+                                }
+                            lines.append(row)
+                elif field == "URL_others":
+                    for url in data[field].split(","):
+                        clean_url = url.strip()
+                        if clean_url:
+                            row = {
+                                "url": clean_url,
+                                "url_type": get_url_type_id(field, url_types, clean_url),
                                 "description": '',  # TODO
-                                "owner_type": 4 if field == "source_of_truth" else 1,  # TODO: persona, partido, coalicion
+                                "owner_type": 1,  # TODO: persona, partido, coalicion
                                 "owner_id": i
                             }
-                        lines.append(row)
-            elif field == "URL_others":
-                for url in data[field].split(","):
-                    clean_url = url.strip()
-                    if clean_url:
-                        row = {
-                            "url": clean_url,
-                            "url_type": get_url_type_id(field, url_types, clean_url),
-                            "description": '',  # TODO
-                            "owner_type": 1,  # TODO: persona, partido, coalicion
-                            "owner_id": i
-                        }
-                        lines.append(row)
+                            lines.append(row)
     return lines
 
 
