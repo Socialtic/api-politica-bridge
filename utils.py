@@ -1,11 +1,17 @@
 import os
 import re
 import requests
+import json
 import progressbar
 from requests import exceptions as r_excepts
 from validations import (last_name_check, membership_type_check,
                          date_format_check, url_check, profession_check,
                          url_other_check)
+with open("token.json", 'r') as f:
+    TOKEN = json.load(f)
+HEADERS = {
+    "Authorization": f"{TOKEN['token_type']} {TOKEN['token_value']}"
+}
 
 
 class Catalogues:
@@ -131,18 +137,6 @@ def read_csv(file_name, path=""):
     full_path = os.path.join(path, file_name)
     with open(full_path + ".csv", "r", encoding="utf-8") as f:
         return [line.split(",") for line in f.read().rstrip("\n").split("\n")]
-
-
-def my_str_to_bool(row, endpoint):
-    p_fields = ["dead_or_alive"]
-    m_fields = ["goes_for_coalition", "goes_for_reelection", "is_substitute", "changed_from_substitute"]
-    if endpoint == "person":
-        fields = p_fields
-    elif endpoint == "membership":
-        fields = m_fields
-    for field in fields:
-        row[field] = True if row[field] == "TRUE" else False
-    return row
 
 
 def make_table(header, dataset):
@@ -353,7 +347,7 @@ def send_data(base_url, endpoint, dataset):
         for i, row in enumerate(dataset, start=2):
             try:
                 # Sending row data to api
-                r = requests.post(full_url, json=row)
+                r = requests.post(full_url, json=row, headers=HEADERS)
             except r_excepts.ConnectionError:
                 print("[CONNECTION ERROR]")
                 print(f"#{i} | url: {full_url} | data:{row}")
@@ -364,54 +358,52 @@ def send_data(base_url, endpoint, dataset):
 
 
 def send_new_data(field, changes, api_base, dataset, person_id):
-    """TODO: Docstring for send_new_data.
-    :returns: TODO
-
-    """
     url_pattern = r'(^Website$|^source_of_truth$|^URL_(\w)*$)'
     # Tables to modify: other-name
     if field == "nickname":
         endpoint = "other-name"
-        r = requests.get(api_base + endpoint)
-        other_name_data = r.json()["other_names"]
+        r = requests.get(api_base + endpoint, headers=HEADERS)
+        other_name_data = r.json()
         for name in other_name_data:
             # TODO: Multi nicknames
             if person_id == str(name["person_id"]):
+                breakpoint()
                 name["name"] = changes[1]
                 other_type = Catalogues.OTHER_NAMES_TYPES.index(name["other_name_type_id"])
                 name["other_name_type"] = other_type
                 full_endpoint = f"{api_base}{endpoint}/{name['id']}"
-                r = requests.put(full_endpoint, json=name)
+                r = requests.put(full_endpoint, json=name, headers=HEADERS)
                 return r
+        breakpoint()
         # It's a new nickname
         new_data = {
             "name": changes[1],
             "other_name_type": 2, # TODO
             "person_id": person_id
         }
-        r = requests.post(api_base + endpoint, json=new_data)
+        r = requests.post(api_base + endpoint, json=new_data, headers=HEADERS)
         return r
     elif field in ["start_date", "end_date"]:
         endpoint = "membership"
-        r = requests.get(api_base + endpoint)
+        r = requests.get(api_base + endpoint, headers=HEADERS)
         memberships = r.json()["memberships"]
         for membership in memberships:
             if person_id == membership["person_id"]:
                 membership_id = membership["id"]
                 membership[field] = changes[1]
                 r = requests.put(f"{api_base}{endpoint}/{membership_id}",
-                                 data=membership)
+                                 data=membership, headers=HEADERS)
                 return r
         return {"error": f"person #{person_id} not found", "success": False}
     elif re.search(url_pattern, field):
         endpoint = "url"
-        r = requests.get(api_base + endpoint)
+        r = requests.get(api_base + endpoint, headers=HEADERS)
         urls = r.json()["urls"]
         for url in urls:
             if person_id == url["owner_id"]:
                 url["url"] = changes[1]
                 r = requests.put(f"{api_base}{endpoint}/{membership_id}",
-                                 data=url)
+                                 data=url, headers=HEADERS)
         # TODO: It's a new URL
         # TODO: get URL type
     return True
