@@ -1,3 +1,4 @@
+from datetime import datetime
 from sheets import sheet_reader
 from static_tables import (area_data, chamber_data, role_data, coalition_data,
                            coalitions_catalogue, party_data, parties,
@@ -13,7 +14,7 @@ CAPTURE_SHEET_ID = "1mk9LTI5RBYwrEPzILeDY925VJbLVmEoZyRzaa1gZ_hk"
 READ_RANGE = "TODO!A1:AG2441"
 PARTY_URL_RANGE = "URL_logo_partido_coal!H1:P62"
 COALITION_URL_RANGE = "URL_logo_partido_coal!A1:G37"
-
+CSV_DB_PATH = 'csv_db'
 API_BASE = 'http://localhost:5000/'
 # API endpoints
 ENDPOINTS = ["area", "chamber", "role", "coalition", "party", "person",
@@ -32,7 +33,9 @@ def main():
     error_lines = verification_process(dataset, header)
     if error_lines:
         # Writing report
-        write_csv("\n".join(error_lines), "errors")
+        date = datetime.now()
+        str_date = date.strftime("%y-%b-%d")
+        write_csv("\n".join(error_lines), f"errors/{str_date}_errors")
         print(f"\n\t ** {len(error_lines)} fails **")
     else:
         print(f"\t OK. ")
@@ -48,14 +51,14 @@ def main():
     person_data = make_person_struct(dataset, contest_chambers, person_header)
     # Making a table for double check
     person_table = make_table(person_header, person_data)
-    write_csv(person_table, f"dataset/person")
+    write_csv(person_table, f"{CSV_DB_PATH}/person")
     # OTHER-NAME
     other_name_header = ["other_name_type", "name", "person_id"]
     # This list is ready to be send to the API
     other_names_data = make_other_names_struct(dataset)
     # Making a table for double check
     other_name_table = make_table(other_name_header, other_names_data)
-    write_csv(other_name_table, "dataset/other-name")
+    write_csv(other_name_table, f"{CSV_DB_PATH}/other-name")
 
     #  PERSON-PROFESSION
     person_profession_header = ["person_id", "profession_id"]
@@ -63,7 +66,7 @@ def main():
                                                     professions_catalogue)
     person_profession_table = make_table(person_profession_header,
                                             person_profession_data)
-    write_csv(person_profession_table, "dataset/person-profession")
+    write_csv(person_profession_table, f"{CSV_DB_PATH}/person-profession")
 
     # MEMBERSHIP
     membership_header = ["person_id", "role_id", "party_id",
@@ -76,7 +79,7 @@ def main():
     membership_data = make_membership(dataset, parties, coalitions_catalogue,
                                       contest_chambers, membership_header)
     membership_table = make_table(membership_header, membership_data)
-    write_csv(membership_table, f"dataset/membership")
+    write_csv(membership_table, f"{CSV_DB_PATH}/membership")
 
     # URL
     url_header = ["url", "description", "url_type", "owner_type",
@@ -91,7 +94,7 @@ def main():
     url_data += make_url_struct(coalition_url, url_types, coalition_data,
                                 party_data, "coalition")
     url_table = make_table(url_header, url_data)
-    write_csv(url_table, f"dataset/url")
+    write_csv(url_table, f"{CSV_DB_PATH}/url")
     print("\t * Ok.")
 
     make_banner("Sending data to API")
