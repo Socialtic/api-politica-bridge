@@ -235,12 +235,14 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header):
             coalition_id = coalitions.index(data["coalition"].lower().strip()) + 1
         else:
             coalition_id = -1
+        contest_id = get_contest_id(data, contest_chambers)
         lines.append({
             "person_id": i,
-            "role_id": Catalogues.ROLE_TYPES.index(data["role_type"]),
+            # TODO: By now contest_id == role_id. Change soon
+            "role_id": contest_id,
             "party_id": parties.index(data["abbreviation"].lower()) + 1,
             "coalition_id": coalition_id,
-            "contest_id": get_contest_id(data, contest_chambers),
+            "contest_id": contest_id,
             "goes_for_coalition": True if data["coalition"] else False,
             "membership_type": Catalogues.MEMBERSHIP_TYPES.index(data["membership_type"]),
             "goes_for_reelection": False,  # Always false
