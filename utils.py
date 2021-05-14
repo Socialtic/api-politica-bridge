@@ -176,7 +176,7 @@ def make_person_struct(dataset, contest_chambers, header):
     people = []
     for data in dataset:
         row = dict()
-        row["is_deleted"] = True if not data["person_id"] else False
+        row["is_deleted"] = data["is_deleted"]
         for field in header:
             if field == "gender":
                 row[field] = 2 if data[field] == "F" else 1
@@ -205,10 +205,9 @@ def make_other_names_struct(dataset):
     result = []
     for i, data in enumerate(dataset, start=1):
         # TODO: check multinickname case
-        is_deleted = True if not data["person_id"] else False
         if data["nickname"]:
             result.append({
-                "is_deleted": is_deleted,
+                "is_deleted": data["is_deleted"],
                 "other_name_type": 2, # TODO
                 "name": data["nickname"],
                 "person_id": i
@@ -226,6 +225,7 @@ def make_person_profession(dataset, professions):
                 if profession:
                     profession_id = professions.index(profession) + 1
                     lines.append({
+                        "is_deleted": data["is_deleted"],
                         "person_id": i,
                         "profession_id": profession_id
                     })
@@ -241,6 +241,7 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header):
             coalition_id = -1
         contest_id = get_contest_id(data, contest_chambers)
         lines.append({
+            "is_deleted": data["is_deleted"],
             "person_id": i,
             # TODO: By now contest_id == role_id. Change soon
             "role_id": contest_id,
@@ -318,6 +319,7 @@ def make_url_struct(dataset, url_types, coalitions=[], parties=[], owner_type=""
                     if data[field]:
                         for url in data[field].split(','):
                             row = {
+                                    "is_deleted": data["is_deleted"],
                                     "url": data[field],
                                     "url_type": get_url_type_id(field, url_types),
                                     "description": '',  # TODO
@@ -330,6 +332,7 @@ def make_url_struct(dataset, url_types, coalitions=[], parties=[], owner_type=""
                         clean_url = url.strip()
                         if clean_url:
                             row = {
+                                "is_deleted": data["is_deleted"],
                                 "url": clean_url,
                                 "url_type": get_url_type_id(field, url_types, clean_url),
                                 "description": '',  # TODO
@@ -401,6 +404,7 @@ def get_dummy_data(endpoint):
 
 def send_data(base_url, endpoint, dataset):
     full_url = base_url + endpoint + '/'
+    deleted = []
     with ProgressBar(max_value=len(dataset), redirect_stdout=True) as bar:
         for i, row in enumerate(dataset, start=1):
             try:
@@ -410,6 +414,7 @@ def send_data(base_url, endpoint, dataset):
                     print("Dummy POST r:", r.status_code, "#", i, row)
                     r = requests.delete(f"{full_url}{i}", headers=HEADERS)
                     print("Dummy DELETE r:", r.status_code, "#", i)
+                    deleted.append(row)
                     continue
                 else:
                     del row["is_deleted"]
@@ -425,6 +430,10 @@ def send_data(base_url, endpoint, dataset):
                 print(f"[ERROR]: {endpoint} #{i} status code: {r.status_code}")
                 print(f"msg: {r.json()['message']}")
             bar.update(i - 1)
+    if deleted:
+        with open(f"deleted/{endpoint}.txt", "a") as f:
+            json.dump(deleted, f)
+
 
 
 def send_new_data(field, changes, api_base, dataset, person_id):
@@ -437,7 +446,6 @@ def send_new_data(field, changes, api_base, dataset, person_id):
         for name in other_name_data:
             # TODO: Multi nicknames
             if person_id == str(name["person_id"]):
-                breakpoint()
                 name["name"] = changes[1]
                 other_type = Catalogues.OTHER_NAMES_TYPES.index(name["other_name_type_id"])
                 name["other_name_type"] = other_type
