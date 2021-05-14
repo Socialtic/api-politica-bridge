@@ -2,7 +2,7 @@ import os
 import re
 import requests
 import json
-import progressbar
+from progressbar import ProgressBar
 from requests import exceptions as r_excepts
 from validations import (last_name_check, membership_type_check,
                          date_format_check, url_check, profession_check,
@@ -92,9 +92,10 @@ def row_to_dict(row, header, test_fields=[]):
 def verification_process(dataset, header):
     lines = []
     # Loop to read every row
-    with progressbar.ProgressBar(max_value=len(dataset)) as bar:
-        for i, row in enumerate(dataset, start=2):
-            # print(f"\t\t -> Checking row #{i} = {row['full_name']}")
+    with ProgressBar(max_value=len(dataset)) as bar:
+        for i, row in enumerate(dataset, start=1):
+            if not row["person_id"]:
+                continue
             line = f'{i}'
             # Tests suite start
             line += ",last_name" if not last_name_check(row["last_name"] or "") else ""
@@ -119,7 +120,7 @@ def verification_process(dataset, header):
             else:
                 line += f",{row['full_name']}"
                 lines.append(line)
-            bar.update(i - 2)
+            bar.update(i - 1)
     return lines
 
 
@@ -171,10 +172,14 @@ def get_contest_id(data, contest_chambers):
     return -1
 
 
-def make_person_struct(dataset, contest_chambers, header):
+def make_person_struct(dataset, contest_chambers, header, db_mode):
     people = []
     for data in dataset:
         row = dict()
+        if db_mode == "FB" and not data["person_id"]:
+            row["person_id"] = ''
+        else:
+            row["person_id"] = data["person_id"]
         for field in header:
             if field == "gender":
                 row[field] = 2 if data[field] == "F" else 1
@@ -343,10 +348,73 @@ def colors_to_list(data):
     return data
 
 
-def send_data(base_url, endpoint, dataset):
+def get_dummy_data(endpoint):
+    if endpoint == "person":
+        dummy_data = {
+            "full_name": '',
+            "first_name": '',
+            "last_name": '',
+            "date_birth": '0001-01-01',
+            "gender": -1,
+            "dead_or_alive": True,
+            "last_degree_of_studies": -1,
+            "contest_id": -1
+        }
+    elif endpoint == "other-name":
+        dummy_data = {
+            "other_name_type": -1,
+            "name": "",
+            "person_id": -1
+        }
+    elif endpoint == "person-profession":
+        dummy_data = {
+            "person_id": -1,
+            "profession_id": -1
+        }
+    elif endpoint == "membership":
+        dummy_data = {
+            "person_id": -1,
+            "role_id": -1,
+            "party_id": -1,
+            "coalition_id": -1,
+            "contest_id": -1,
+            "goes_for_coalition": False,
+            "membership_type": -1,
+            "goes_for_reelection": False,
+            "start_date": "0001-01-01",
+            "end_date": "0001-01-01",
+            "is_substitute": False,
+            "parent_membership_id": -1,
+            "changed_from_substitute": False,
+            "date_changed_from_substitute": "0001-01-01"
+        }
+    elif endpoint == "url":
+        dummy_data = {
+            "url": "",
+            "description": "",
+            "url_type": -1,
+            "owner_type": -1,
+            "owner_id": -1
+        }
+    return dummy_data
+
+
+
+def send_data(base_url, endpoint, dataset, db_mode=''):
     full_url = base_url + endpoint + '/'
-    with progressbar.ProgressBar(max_value=len(dataset), redirect_stdout=True) as bar:
-        for i, row in enumerate(dataset, start=2):
+    if db_mode:
+        make_banner(f"DB_MODE --> {db_mode}")
+    with ProgressBar(max_value=len(dataset), redirect_stdout=True) as bar:
+        for i, row in enumerate(dataset, start=1):
+            if db_mode == "FB" and not row["person_id"]:
+                dummy_data = get_dummy_data(endpoint)
+                r = requests.post(full_url, json=dummy_data, headers=HEADERS)
+                print("Dummy POST r:", r.status_code, "#", i)
+                r = requests.delete(f"{full_url}{i}", headers=HEADERS)
+                print("Dummy DELETE r:", r.status_code, "#", i)
+                continue
+            elif db_mode == "FB":
+                del row["person_id"]
             try:
                 # Sending row data to api
                 r = requests.post(full_url, json=row, headers=HEADERS)
@@ -356,7 +424,7 @@ def send_data(base_url, endpoint, dataset):
             if r.status_code != 201:
                 print(f"[ERROR]: {endpoint} #{i} status code: {r.status_code}")
                 print(f"msg: {r.json()['message']}")
-            bar.update(i - 2)
+            bar.update(i - 1)
 
 
 def send_new_data(field, changes, api_base, dataset, person_id):
