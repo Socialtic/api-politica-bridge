@@ -172,14 +172,11 @@ def get_contest_id(data, contest_chambers):
     return -1
 
 
-def make_person_struct(dataset, contest_chambers, header, db_mode):
+def make_person_struct(dataset, contest_chambers, header):
     people = []
     for data in dataset:
         row = dict()
-        if db_mode == "FB" and not data["person_id"]:
-            row["person_id"] = ''
-        else:
-            row["person_id"] = data["person_id"]
+        row["is_deleted"] = True if not data["person_id"] else False
         for field in header:
             if field == "gender":
                 row[field] = 2 if data[field] == "F" else 1
@@ -208,8 +205,10 @@ def make_other_names_struct(dataset):
     result = []
     for i, data in enumerate(dataset, start=1):
         # TODO: check multinickname case
+        is_deleted = True if not data["person_id"] else False
         if data["nickname"]:
             result.append({
+                "is_deleted": is_deleted,
                 "other_name_type": 2, # TODO
                 "name": data["nickname"],
                 "person_id": i
@@ -400,21 +399,22 @@ def get_dummy_data(endpoint):
 
 
 
-def send_data(base_url, endpoint, dataset, db_mode=''):
+def send_data(base_url, endpoint, dataset):
     full_url = base_url + endpoint + '/'
-    if db_mode:
-        make_banner(f"DB_MODE --> {db_mode}")
     with ProgressBar(max_value=len(dataset), redirect_stdout=True) as bar:
         for i, row in enumerate(dataset, start=1):
-            if db_mode == "FB" and not row["person_id"]:
-                dummy_data = get_dummy_data(endpoint)
-                r = requests.post(full_url, json=dummy_data, headers=HEADERS)
-                print("Dummy POST r:", r.status_code, "#", i)
-                r = requests.delete(f"{full_url}{i}", headers=HEADERS)
-                print("Dummy DELETE r:", r.status_code, "#", i)
-                continue
-            elif db_mode == "FB":
-                del row["person_id"]
+            try:
+                if row["is_deleted"]:
+                    dummy_data = get_dummy_data(endpoint)
+                    r = requests.post(full_url, json=dummy_data, headers=HEADERS)
+                    print("Dummy POST r:", r.status_code, "#", i, row)
+                    r = requests.delete(f"{full_url}{i}", headers=HEADERS)
+                    print("Dummy DELETE r:", r.status_code, "#", i)
+                    continue
+                else:
+                    del row["is_deleted"]
+            except KeyError:
+                pass
             try:
                 # Sending row data to api
                 r = requests.post(full_url, json=row, headers=HEADERS)

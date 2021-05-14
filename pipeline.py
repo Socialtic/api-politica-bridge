@@ -20,7 +20,6 @@ API_BASE = 'http://localhost:5000/'
 # API endpoints
 ENDPOINTS = ["area", "chamber", "role", "coalition", "party", "person",
              "other-name", "profession", "membership", "contest", "url"]
-DB_MODE = sys.argv[1].upper()
 
 
 def main():
@@ -42,25 +41,25 @@ def main():
         print("\t OK. ")
 
     # PREPROCESSING DYNAMIC DATA
-    print("\t * Build dynamic data")
+    make_banner("Build dynamic data")
 
     # PERSON
     person_header = ["full_name", "first_name", "last_name", "date_birth",
                      "gender", "dead_or_alive", "last_degree_of_studies",
                      "contest_id"]
     # This list is ready to be send to the API
-    person_data = make_person_struct(dataset, contest_chambers, person_header,
-                                     DB_MODE)
+    person_data = make_person_struct(dataset, contest_chambers, person_header)
     # Making a table for double check
     person_table = make_table(person_header, person_data)
-    write_csv(person_table, f"{CSV_DB_PATH}/{DB_MODE}/person")
+    write_csv(person_table, f"{CSV_DB_PATH}/person")
+
     # OTHER-NAME
     other_name_header = ["other_name_type", "name", "person_id"]
     # This list is ready to be send to the API
     other_names_data = make_other_names_struct(dataset)
     # Making a table for double check
     other_name_table = make_table(other_name_header, other_names_data)
-    write_csv(other_name_table, f"{CSV_DB_PATH}/{DB_MODE}/other-name")
+    write_csv(other_name_table, f"{CSV_DB_PATH}/other-name")
 
     #  PERSON-PROFESSION
     person_profession_header = ["person_id", "profession_id"]
@@ -68,8 +67,7 @@ def main():
                                                     professions_catalogue)
     person_profession_table = make_table(person_profession_header,
                                          person_profession_data)
-    write_csv(person_profession_table,
-              f"{CSV_DB_PATH}/{DB_MODE}/person-profession")
+    write_csv(person_profession_table, f"{CSV_DB_PATH}/person-profession")
 
     # MEMBERSHIP
     membership_header = ["person_id", "role_id", "party_id",
@@ -82,7 +80,7 @@ def main():
     membership_data = make_membership(dataset, parties, coalitions_catalogue,
                                       contest_chambers, membership_header)
     membership_table = make_table(membership_header, membership_data)
-    write_csv(membership_table, f"{CSV_DB_PATH}/{DB_MODE}/membership")
+    write_csv(membership_table, f"{CSV_DB_PATH}/membership")
 
     # URL
     url_header = ["url", "description", "url_type", "owner_type", "owner_id"]
@@ -96,7 +94,7 @@ def main():
     url_data += make_url_struct(coalition_url, url_types, coalition_data,
                                 party_data, "coalition")
     url_table = make_table(url_header, url_data)
-    write_csv(url_table, f"{CSV_DB_PATH}/{DB_MODE}/url")
+    write_csv(url_table, f"{CSV_DB_PATH}/url")
     print("\t * Ok.")
 
     make_banner("Sending data to API")
@@ -117,26 +115,25 @@ def main():
     send_data(API_BASE, 'party', party_data)
     # PERSON (dynamic)
     print("\t * PERSON")
-    send_data(API_BASE, 'person', person_data, DB_MODE)
-    breakpoint()
+    send_data(API_BASE, 'person', person_data)
     # OTHER-NAME (dynamic)
     print("\t * OTHER-NAME")
-    send_data(API_BASE, 'other-name', other_names_data, DB_MODE)
+    send_data(API_BASE, 'other-name', other_names_data)
     # PROFESSION (static)
     print("\t * PROFESSION")
     send_data(API_BASE, 'profession', profession_data)
     # PERSON-PROFESSION (dynamic)
     print("\t * PERSON-PROFESSION")
-    send_data(API_BASE, 'person-profession', person_profession_data, DB_MODE)
+    send_data(API_BASE, 'person-profession', person_profession_data)
     # MEMBERSHIP (dynamic)
     print("\t * MEMBERSHIP")
-    send_data(API_BASE, 'membership', membership_data, DB_MODE)
+    send_data(API_BASE, 'membership', membership_data)
     # CONTEST (static)
     print("\t * CONTEST")
     send_data(API_BASE, 'contest', contest_data)
     # URL (dynamic)
     print("\t * URL")
-    send_data(API_BASE, 'url', url_data, DB_MODE)
+    send_data(API_BASE, 'url', url_data)
     make_banner("Finish. Have a nice day :)")
 
 
