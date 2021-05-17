@@ -359,7 +359,7 @@ def send_data(base_url, endpoint, dataset):
             bar.update(i - 2)
 
 
-def send_new_data(field, changes, api_base, dataset, person_id):
+def update_data(field, changes, api_base, dataset, person_id):
     url_pattern = r'(^Website$|^source_of_truth$|^URL_(\w)*$)'
     # Tables to modify: other-name
     if field == "nickname":
@@ -411,12 +411,12 @@ def send_new_data(field, changes, api_base, dataset, person_id):
     return True
 
 
-def search_by_name(dataset, prediction_name):
+def search_by_name(dataset, name):
     """TODO: Docstring for search_by_name.
     :returns: TODO
 
     """
     for i, row in enumerate(dataset):
-        if row["full_name"] == prediction_name:
+        if row["full_name"] == name:
             return i + 1, row
     return -1, {}
