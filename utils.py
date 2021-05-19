@@ -436,7 +436,7 @@ def send_data(base_url, endpoint, dataset):
 
 
 
-def send_new_data(field, changes, api_base, dataset, person_id):
+def update_data(field, changes, api_base, dataset, person_id):
     url_pattern = r'(^Website$|^source_of_truth$|^URL_(\w)*$)'
     # Tables to modify: other-name
     if field == "nickname":
@@ -487,12 +487,63 @@ def send_new_data(field, changes, api_base, dataset, person_id):
     return True
 
 
-def search_by_name(dataset, prediction_name):
+def search_by_name(dataset, name):
     """TODO: Docstring for search_by_name.
     :returns: TODO
 
     """
     for i, row in enumerate(dataset):
-        if row["full_name"] == prediction_name:
+        if row["full_name"] == name:
             return i + 1, row
     return -1, {}
+
+
+def get_capture_lines(dataset):
+    """Genera una lista con lineas de captura
+
+    Función encargada de generar lineas de captura separadas por comas y
+    las regresa en una lista
+
+    :param dataset: Lista de diccionarios con la información de captura
+    :type: list
+    :returns: Lista con lineas de captura separadas por comas
+    :rtype: list
+    """
+    result = []
+    for people in dataset:
+        line = people["person_id"] + ','
+        line += people["role_type"] + ','
+        line += people["first_name"] + ','
+        line += people["last_name"] + ','
+        line += people["full_name"] + ','
+        line += people["nickname"] + ','
+        line += people["abbreviation"] + ','
+        line += people["coalition"] + ','
+        line += people["state"] + ','
+        line += people["area"] + ','
+        line += people["membership_type"] + ','
+        line += people["start_date"] + ','
+        line += people["end_date"] + ','
+        line += people["is_substitute"] + ','
+        line += people["is_titular"] + ','
+        line += people["date_birth"] + ','
+        line += people["gender"] + ','
+        line += people["dead_or_alive"] + ','
+        line += people["last_degree_of_studies"] + ','
+        line += f'"{people["profession_1"]}",'
+        line += people["profession_2"] + ','
+        line += people["profession_3"] + ','
+        line += people["profession_4"] + ','
+        line += people["profession_5"] + ','
+        line += people["profession_6"] + ','
+        line += f'"{people["Website"]}",'
+        line += f'"{people["URL_FB_page"]}",'
+        line += f'"{people["URL_FB_profile"]}",'
+        line += f'"{people["URL_IG"]}",'
+        line += f'"{people["URL_TW"]}",'
+        line += f'"{people["URL_others"]}",'
+        line += f'"{people["URL_photo"]}",'
+        line += f'"{people["source_of_truth"]}",'
+        result.append(line)
+    return result
+
