@@ -52,6 +52,7 @@ def main():
     # Making a table for double check
     person_table = make_table(person_header, person_data)
     write_csv(person_table, f"{CSV_DB_PATH}/person")
+
     # OTHER-NAME
     other_name_header = ["other_name_type", "name", "person_id"]
     # This list is ready to be send to the API
