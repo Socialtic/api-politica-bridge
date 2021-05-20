@@ -124,13 +124,14 @@ def verification_process(dataset, header):
     return lines
 
 
-def write_csv(data, name):
+def write_csv(data, name, path=""):
     """**Write a csv file with current data**
 
     :param data: A comma separated string
     :type data: str
     """
-    with open(f"{name}.csv", 'w', encoding="utf-8") as f:
+    full_path = os.path.join(path, name)
+    with open(f"{full_path}.csv", 'w', encoding="utf-8") as f:
         f.write(data)
 
 
@@ -207,6 +208,7 @@ def make_other_names_struct(dataset):
         # TODO: check multinickname case
         if data["nickname"]:
             result.append({
+                "other_name_id": i,
                 "is_deleted": data["is_deleted"],
                 "other_name_type": 2, # TODO
                 "name": data["nickname"],
@@ -225,6 +227,7 @@ def make_person_profession(dataset, professions):
                 if profession:
                     profession_id = professions.index(profession) + 1
                     lines.append({
+                        "person_profession_id": i,
                         "is_deleted": data["is_deleted"],
                         "person_id": i,
                         "profession_id": profession_id
@@ -242,6 +245,7 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header):
         contest_id = get_contest_id(data, contest_chambers)
         lines.append({
             "is_deleted": data["is_deleted"],
+            "membership_id": i,
             "person_id": i,
             # TODO: By now contest_id == role_id. Change soon
             "role_id": contest_id,
@@ -293,7 +297,7 @@ def make_url_struct(dataset, url_types, coalitions=[], parties=[], owner_type=""
     lines = []
     field_pattern = r'(^Website$|^URL_(\w)*$)'
     if owner_type in ["coalition", "party"]:
-        for data in dataset:
+        for i, data in enumerate(dataset, start=1):
             for field in data:
                 if re.search(field_pattern, field):
                     if data[field]:
@@ -305,6 +309,7 @@ def make_url_struct(dataset, url_types, coalitions=[], parties=[], owner_type=""
                                 owner_id = get_owner_id(parties, data["Abreviacion"],
                                                         "abbreviation")
                             lines.append({
+                                "url_id": i,
                                 "url": data[field],
                                 "url_type": get_url_type_id(field, url_types),
                                 "description": "",
@@ -319,6 +324,7 @@ def make_url_struct(dataset, url_types, coalitions=[], parties=[], owner_type=""
                     if data[field]:
                         for url in data[field].split(','):
                             row = {
+                                    "url_id": i,
                                     "is_deleted": data["is_deleted"],
                                     "url": data[field],
                                     "url_type": get_url_type_id(field, url_types),
@@ -332,6 +338,7 @@ def make_url_struct(dataset, url_types, coalitions=[], parties=[], owner_type=""
                         clean_url = url.strip()
                         if clean_url:
                             row = {
+                                "url_id": i,
                                 "is_deleted": data["is_deleted"],
                                 "url": clean_url,
                                 "url_type": get_url_type_id(field, url_types, clean_url),
@@ -436,7 +443,7 @@ def send_data(base_url, endpoint, dataset):
 
 
 
-def update_data(field, changes, api_base, dataset, person_id):
+def update_data(field, changes, api_base, person_id, mode):
     url_pattern = r'(^Website$|^source_of_truth$|^URL_(\w)*$)'
     # Tables to modify: other-name
     if field == "nickname":
