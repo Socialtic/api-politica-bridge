@@ -1,5 +1,7 @@
 import os
 import logging
+import re
+from datetime import datetime
 from csv_diff import load_csv, compare
 from sheets import sheet_reader
 from static_tables import (area_data, chamber_data, role_data, coalition_data,
@@ -9,7 +11,8 @@ from static_tables import (area_data, chamber_data, role_data, coalition_data,
 from utils import (make_table, write_csv, make_banner, update_data, read_csv,
                    row_to_dict, send_data, make_person_struct,
                    make_other_names_struct, make_person_profession,
-                   make_membership, make_url_struct, get_capture_lines)
+                   make_membership, make_url_struct, get_capture_lines,
+                   verification_process)
 
 # Updates logger
 update_logger = logging.getLogger("updates")
@@ -57,30 +60,34 @@ add_logger.addHandler(stream_handler)
 deletes_logger.addHandler(deletes_file)
 deletes_logger.addHandler(stream_handler)
 
-#logging.basicConfig(level=logging.INFO, filename="logs/updater.log",
-#                    datefmt="%d/%b/%y %H:%M:%S",
-#format="%(levelname)s,%(asctime)s,%(message)s")
 
 SHEET_ID = "1mk9LTI5RBYwrEPzILeDY925VJbLVmEoZyRzaa1gZ_hk"
-DATA_PATH = 'dataset/'
+DATA_PATH = 'dataset'
 API_BASE = "http://localhost:5000/"
 # TODO: Dynamicaly change over the time
-WEEK = 2
+# Week 1 = 3 May
+WEEK = 3
 
-local = True
+url_pattern = r'(^Website$|^source_of_truth$|^URL_(\w)*$)'
+local = False
 
 
 def send_changes(changed):
+    breakpoint()
     for row in changed:
-        person_id = row["key"]
-        fields = row["changes"].keys()
-        for field in fields:
-            changes = row["changes"][field]
-            old = changes[0]
-            new = changes[1]
-            log_msg = f"CHANGE,{WEEK},{person_id},{old},{new},{field}"
+        for field, changes in row["changes"].items():
+            data = {
+                "person_id": row["key"],
+                "field": field,
+                "old": changes[0]
+                "new": changes[1]
+            }
+            log_msg = f'CHANGE,{WEEK},{data['person_id']},"{data['old']}","{data['new']}",{field}'
+            # Information removed
+            mode = "remove" if new == "" else "update"
+            if re.search(url_pattern, field):
+            r = update_data(field, changes, API_BASE, person_id)
             update_logger.info(log_msg)
-            # r = update_data(field, changes, API_BASE, dataset, person_id)
 
 
 def send_additions(added):
@@ -137,21 +144,32 @@ def log_deletes(deletes):
 def main():
     make_banner(f"Checking for updates | LOCAL: {local}")
     if local:
-        dataset = read_csv("dataset/current")
+        dataset = read_csv("Todos_current", path=DATA_PATH)
         header = dataset.pop(0)
         dataset = [row_to_dict(row, header) for row in dataset]
     else:
-        dataset = sheet_reader(SHEET_ID, "TODO!A1:AF2423")
+        dataset = sheet_reader(SHEET_ID, "Todos!A1:AG2583")
         header = dataset[0].keys()
         table = make_table(header, dataset)
-        write_csv(table, f"{DATA_PATH}current")
-    if not os.path.isfile('dataset/old.csv'):
-        write_csv(table, f"{DATA_PATH}/old")
+        write_csv(table, "Todos_current", path=DATA_PATH)
+        print(f"\t * Test {len(dataset)} rows")
+        error_lines = verification_process(dataset, header)
+        if error_lines:
+            # Writing report
+            date = datetime.now()
+            str_date = date.strftime("%y-%b-%d")
+            write_csv("\n".join(error_lines), f"{str_date}_errors",
+                      path="errors")
+            print(f"\n\t ** {len(error_lines)} fails **")
+        else:
+            print("\t OK. ")
+    if not os.path.isfile('dataset/Todos_old.csv'):
+        write_csv(table, "Todos_old", path=DATA_PATH)
         print("ALL IS UPDATED :)")
         return 0
     diff = compare(
-        load_csv(open(f'{DATA_PATH}old.csv'), key='person_id'),
-        load_csv(open(f'{DATA_PATH}current.csv'), key='person_id'),
+        load_csv(open(f'{DATA_PATH}/Todos_old.csv'), key='person_id'),
+        load_csv(open(f'{DATA_PATH}/Todos_current.csv'), key='person_id'),
     )
     if diff["changed"]:
         make_banner("There are changes")
