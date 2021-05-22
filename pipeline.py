@@ -12,7 +12,7 @@ from utils import (make_banner, verification_process,
 # ID sheets
 CAPTURE_SHEET_ID = "1mk9LTI5RBYwrEPzILeDY925VJbLVmEoZyRzaa1gZ_hk"
 # Capture Read Ranges
-READ_RANGE = "Todos!A1:AG2583"
+READ_RANGE = "Todos!A1:AG2785"
 PARTY_URL_RANGE = "URL_logo_partido_coal!H1:P62"
 COALITION_URL_RANGE = "URL_logo_partido_coal!A1:G37"
 CSV_DB_PATH = 'csv_db'
@@ -69,6 +69,7 @@ def main():
         del other_name["other_name_id"]
 
     #  PERSON-PROFESSION
+    # TODO: Check ids
     person_profession_header = ["person_profession_id", "person_id",
                                 "profession_id"]
     person_profession_data = make_person_profession(dataset,
@@ -96,6 +97,7 @@ def main():
 
 
     # URL
+    # TODO: check ids
     url_header = ["url_id", "url", "description", "url_type", "owner_type",
                   "owner_id"]
     url_data = make_url_struct(dataset, url_types)

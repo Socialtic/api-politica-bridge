@@ -6,9 +6,9 @@ CSV_DB_PATH = 'csv_db'
 
 # Struct read ranges
 ST_RANGES = {
-    "area": "A1:H376", "chamber": "A1:C358", "role": "A1:F358",
-    "coalition": "A1:D37", "party": "A1:F78",
-    "profession": "A1:B119", "contest": "A1:G358"
+    "area": "A1:H389", "chamber": "A1:C371", "role": "A1:F371",
+    "coalition": "A1:D38", "party": "A1:F78",
+    "profession": "A1:B119", "contest": "A1:G371"
     # "past-membership": "A1:G1",
     }
 
@@ -43,7 +43,7 @@ write_csv(make_table(coalition_header, coalition_data),
 coalition_data = colors_to_list(coalition_data)
 for coalition in coalition_data:
     del coalition["coalition_id"]
-coalitions_catalogue = sheet_reader(SHEET_ID, "Table coalition!B2:B37",
+coalitions_catalogue = sheet_reader(SHEET_ID, "Table coalition!B2:B38",
                                     as_list=True)
 
 # PARTY
@@ -61,7 +61,7 @@ contest_header = contest_data[0].keys()
 write_csv(make_table(contest_header, contest_data), f"{CSV_DB_PATH}/contest")
 for contest in contest_data:
     del contest["contest_id"]
-contest_chambers = sheet_reader(SHEET_ID, "Table contest!C2:C358",
+contest_chambers = sheet_reader(SHEET_ID, "Table contest!C2:C371",
                                 as_list=True)
 # PROFESSION
 profession_range = f"Catalogue profession!{ST_RANGES['profession']}"
