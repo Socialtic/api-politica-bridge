@@ -316,7 +316,7 @@ def make_url_struct(dataset, url_types, coalitions=[], parties=[], owner_type=""
                                 "owner_type": 3 if owner_type == "coalition" else 2,
                                 "owner_id": owner_id
                             })
-    # Person  or membership
+    # Person or membership
     else:
         for i, data in enumerate(dataset, start=1):
             for field in data:
@@ -326,7 +326,7 @@ def make_url_struct(dataset, url_types, coalitions=[], parties=[], owner_type=""
                             row = {
                                     "url_id": i,
                                     "is_deleted": data["is_deleted"],
-                                    "url": data[field],
+                                    "url": url.strip(),
                                     "url_type": get_url_type_id(field, url_types),
                                     "description": '',  # TODO
                                     "owner_type": 4 if field == "source_of_truth" else 1,  # TODO: persona, partido, coalicion
@@ -417,9 +417,10 @@ def send_data(base_url, endpoint, dataset):
                 if row["is_deleted"]:
                     dummy_data = get_dummy_data(endpoint)
                     r = requests.post(full_url, json=dummy_data, headers=HEADERS)
-                    print("Dummy POST r:", r.status_code, "#", i, row)
+                    post_status = r.status_code
                     r = requests.delete(f"{full_url}{i}", headers=HEADERS)
-                    print("Dummy DELETE r:", r.status_code, "#", i)
+                    delete_status = r.status_code
+                    print(f"#{i} POST: {post_status} DELETE: {delete_status}")
                     deleted.append(row)
                     continue
                 else:
