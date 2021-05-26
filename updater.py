@@ -13,7 +13,7 @@ from utils import (make_table, write_csv, make_banner, update_data, read_csv,
                    make_membership, make_url_struct, get_capture_lines,
                    verification_process, update_url_data, update_person_data,
                    update_membership_data, update_profession_data,
-                   update_other_name_data)
+                   update_other_name_data, get_update_week)
 
 # Updates logger
 update_logger = logging.getLogger("updates")
@@ -72,9 +72,8 @@ RANGES = {
     "person": PERSON_RANGE, "party_urls": PARTY_URL_RANGE,
     "coalition_urls": COALITION_URL_RANGE
 }
-# TODO: Dynamicaly change over the time
 # Week 1 = 3 May
-WEEK = 4
+WEEK = get_update_week()
 
 url_pattern = r'(^Website$|^source_of_truth$|^URL_(\w)*$)'
 profession_pattern = r'^profession_[2-6]$'

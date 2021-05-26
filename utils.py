@@ -2,6 +2,7 @@ import os
 import re
 import requests
 import json
+from datetime import date
 from progressbar import ProgressBar
 from requests import exceptions as r_excepts
 from validations import (last_name_check, membership_type_check,
@@ -622,4 +623,18 @@ def get_capture_lines(dataset):
         line += f'"{people["source_of_truth"]}",'
         result.append(line)
     return result
+
+
+def get_update_week():
+    """Get current update week number
+
+    Calculate current update process week number with respect to first
+    update process week (2021, 5, 3)
+
+    :returns: Update process week number
+    :rtype: int
+    """
+    zero_week_date = date(2021, 5, 3)
+    current_week = date.today()
+    return current_week.isocalendar()[1] - zero_week_date.isocalendar()[1] + 1
 
