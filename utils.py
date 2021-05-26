@@ -39,6 +39,7 @@ class Catalogues:
                  "URL_IG": "INSTAGRAM_CAMPAIGN", "URL_TW": "TWITTER",
                  "URL_photo": "PHOTO", "source_of_truth": "SOURCE_OF_TRUTH",
                  "URL_logo": "LOGO"}
+    URL_OWNER_TYPES = ["", "PERSON", "PARTY", "COALITION", "MEMBSERHIP"]
 
 
 def make_banner(title):
@@ -447,7 +448,6 @@ def get_url_ids(urls, old_url, person_id):
 
 
 def update_data(field, changes, api_base, person_id):
-    url_pattern = r'(^Website$|^source_of_truth$|^URL_(\w)*$)'
     # Tables to modify: other-name
     if field == "nickname":
         endpoint = "other-name"
@@ -483,40 +483,84 @@ def update_data(field, changes, api_base, person_id):
                                  data=membership, headers=HEADERS)
                 return r
         return {"error": f"person #{person_id} not found", "success": False}
-    elif re.search(url_pattern, field):
-        endpoint = "url"
-        # Information removed
-        if not changes[1]:
-            url_ids = get_url_ids(urls, changes[0], person_id)
-            for url_id in url_ids:
-                r = requests.delete(f"{api_base}{endpoint}/{url_id}",
-                                    headers=HEADERS)
-        # TODO: It's a new URL
-        # TODO: get URL type
-        elif not changes[0]:
-            for new_url in changes[1].split(','):
-                new_url = new_url.strip(" \n\r")
-                data = {
-                    "url": new_url,
-                    "url_type": get_url_type_id(field, url_types, new_url),
-                    "description": '',
-                    "owner_type": 4 if field == "source_of_truth" else 1,
-                    "owner_id": person_id
-                }
-                requests.post(f"{api_base}{endpoint}", headers=HEADERS)
-        else:
-            r = requests.get(api_base + endpoint, headers=HEADERS)
-            urls = r.json()
-            for url in urls:
-                if person_id == url["owner_id"]:
-                    url["url"] = changes[1]
-                    r = requests.put(f"{api_base}{endpoint}/{membership_id}",
-                                    data=url, headers=HEADERS)
     return True
+
+def update_person_data(data, api_base):
+    """TODO: Docstring for update_person_data.
+
+    :arg1: TODO
+    :returns: TODO
+
+    """
+    pass
+
+def update_other_name_data(data, api_base):
+    """TODO: Docstring for update_other_name_data.
+
+    :arg1: TODO
+    :returns: TODO
+
+    """
+    pass
+
+def update_membership_data(data, api_base):
+    """TODO: Docstring for update_membership.
+
+    :arg1: TODO
+    :returns: TODO
+
+    """
+    pass
+
+
+def update_profession_data(data, api_base):
+    """TODO: Docstring for update_profession_data.
+
+    :arg1: TODO
+    :returns: TODO
+
+    """
+    pass
 
 
 def update_url_data(data, api_base, url_types):
-    pass
+    endpoint = "url"
+    r = requests.get(api_base + endpoint, headers=HEADERS)
+    breakpoint()
+    urls = r.json()
+    # Information removed
+    if not data["new"]:
+        url_ids = get_url_ids(urls, data["old"], data["person_id"])
+        for url_id in url_ids:
+            r = requests.delete(f"{api_base}{endpoint}/{url_id}",
+                                headers=HEADERS)
+    # It's a new url
+    elif not data["old"]:
+        for new_url in data["new"].split(','):
+            url_data = {
+                "url": new_url.strip(" \n\r"),
+                "url_type": get_url_type_id(field, url_types, new_url),
+                "description": '',
+                # TODO: coalitions and parties
+                "owner_type": 4 if field == "source_of_truth" else 1,
+                "owner_id": data["person_id"]
+            }
+            r = requests.post(f"{api_base}{endpoint}", json=url_data,
+                              headers=HEADERS)
+    # Update a previous url
+    else:
+        for url in urls:
+            if data["person_id"] == url["owner_id"]:
+                url_data = {
+                    "url": data["new"].strip(" \n\r"),
+                    "url_type": url["url_type"],
+                    "description": '',
+                    "owner_type": Catalogues.URL_OWNER_TYPES.index(url["owner_type"]),
+                    "owner_id": data["owner_id"],
+                }
+                r = requests.put(f"{api_base}{endpoint}/{data['person_id']}",
+                                 data=url, headers=HEADERS)
+    prinf(f"#{person_id} {r.request.method}: {r.status_code}")
 
 
 def search_by_name(dataset, name):

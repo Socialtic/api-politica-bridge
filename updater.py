@@ -1,4 +1,3 @@
-import os
 import logging
 import re
 from datetime import datetime
@@ -12,7 +11,9 @@ from utils import (make_table, write_csv, make_banner, update_data, read_csv,
                    row_to_dict, send_data, make_person_struct,
                    make_other_names_struct, make_person_profession,
                    make_membership, make_url_struct, get_capture_lines,
-                   verification_process)
+                   verification_process, update_url_data, update_person_data,
+                   update_membership_data, update_profession_data,
+                   update_other_name_data)
 
 # Updates logger
 update_logger = logging.getLogger("updates")
@@ -28,7 +29,7 @@ deletes_logger.setLevel(logging.INFO)
 
 # Setting log format
 log_format = logging.Formatter("%(levelname)s,%(asctime)s,%(message)s",
-                                datefmt="%d/%b/%y %H:%M:%S")
+                               datefmt="%d/%b/%y %H:%M:%S")
 
 # Update file handler
 update_file = logging.FileHandler("logs/updates.log")
@@ -64,35 +65,93 @@ deletes_logger.addHandler(stream_handler)
 SHEET_ID = "1mk9LTI5RBYwrEPzILeDY925VJbLVmEoZyRzaa1gZ_hk"
 DATA_PATH = 'dataset'
 API_BASE = "http://localhost:5000/"
+PERSON_RANGE = "Todos!A1:AG2785"
+COALITION_URL_RANGE = "URL_logo_partido_coal!A1:H37"
+PARTY_URL_RANGE = "URL_logo_partido_coal!I1:R62"
+RANGES = {
+    "person": PERSON_RANGE, "party_urls": PARTY_URL_RANGE,
+    "coalition_urls": COALITION_URL_RANGE
+}
 # TODO: Dynamicaly change over the time
 # Week 1 = 3 May
-WEEK = 3
+WEEK = 4
 
 url_pattern = r'(^Website$|^source_of_truth$|^URL_(\w)*$)'
+profession_pattern = r'^profession_[2-6]$'
 local = False
 
 
+def main():
+    make_banner(f"Checking for updates | LOCAL: {local}")
+    for name, read_range in RANGES.items():
+        dataset = sheet_reader(SHEET_ID, read_range)
+        header = dataset[0].keys()
+        table = make_table(header, dataset)
+        write_csv(table, f"{name}_current", path=DATA_PATH)
+        if name == "person":
+            print(f"\t * Test {len(dataset)} rows")
+            error_lines = verification_process(dataset, header)
+            if error_lines:
+                # Writing report
+                date = datetime.now()
+                str_date = date.strftime("%y-%b-%d")
+                write_csv("\n".join(error_lines), f"{str_date}_errors",
+                        path="errors")
+                print(f"\n\t ** {len(error_lines)} fails **")
+            else:
+                print("\t OK. ")
+        diff = compare(
+            load_csv(open(f'{DATA_PATH}/{name}_old.csv'), key=f'{name}_id'),
+            load_csv(open(f'{DATA_PATH}/{name}_current.csv'), key=f'{name}_id'),
+        )
+        breakpoint()
+        if diff["changed"]:
+            make_banner("There are changes")
+            send_changes(diff["changed"])
+        if diff["added"]:
+            make_banner("There are additions")
+            send_additions(diff["added"])
+        if diff["removed"]:
+            make_banner("There are deletes")
+            log_deletes(diff["removed"])
+        make_banner("Finish, have a nice day :D")
+
+
 def send_changes(changed):
-    breakpoint()
     for row in changed:
         for field, changes in row["changes"].items():
             data = {
                 "person_id": row["key"],
                 "field": field,
-                "old": changes[0]
-                "new": changes[1]
+                "old": changes[0],
+                "new": changes[1],
             }
-            log_msg = f'CHANGE,{WEEK},{data['person_id']},"{data['old']}","{data['new']}",{field}'
-            # Information removed
-            mode = "remove" if new == "" else "update"
-            if re.search(url_pattern, field):
-            r = update_data(field, changes, API_BASE, person_id)
+            log_msg = f"""CHANGE,{WEEK},{data['person_id']},"{data['old']}","{data['new']}",{field}"""
+            # first_name, last_name, full_name, date_birth, gender,
+            # dead_or_alive, last_degree_of_studies, nickname, state, area
+            if field in ["first_name", "last_name", "full_name", "date_birth",
+                         "gender", "dead_or_alive", "last_degree_of_studies",
+                         "state", "area"]:
+                update_person_data(data, API_BASE)
+            elif field == "nickname":
+                update_other_name_data(data, API_BASE)
+            # profession_[2-6]
+            elif re.search(profession_pattern, field):
+                update_profession_data(data, API_BASE)
+            # Website, URL_FB_page, URL_FB_profile, URL_IG, URL_TW, URL_others,
+            # URL_photo, source_of_truth
+            elif re.search(url_pattern, field):
+                update_url_data(data, API_BASE, url_types)
+            # start_date, end_date, membership_type, is_substitute,
+            elif field in ["start_date", "end_date", "membership_type",
+                           "is_substitute", "abbreviation", "coalition"]:
+                update_membership_data(data, API_BASE)
             update_logger.info(log_msg)
 
 
 def send_additions(added):
     # PERSON
-    person_header = ["full_name", "first_name", "last_name", "date_birth",
+    """person_header = ["full_name", "first_name", "last_name", "date_birth",
                      "gender", "dead_or_alive", "last_degree_of_studies",
                      "contest_id"]
     person_data = make_person_struct(added, contest_chambers, person_header)
@@ -129,7 +188,7 @@ def send_additions(added):
     url_data = make_url_struct(added, url_types)
     if url_data:
         print("\t * SENDING URL DATA")
-        send_data(API_BASE, 'url', url_data)
+        send_data(API_BASE, 'url', url_data)"""
     lines = get_capture_lines(added)
     print()
     for line in lines:
@@ -139,48 +198,6 @@ def send_additions(added):
 def log_deletes(deletes):
     for line in get_capture_lines(deletes):
         deletes_logger.info(f"DELETE,{WEEK},{line}")
-
-
-def main():
-    make_banner(f"Checking for updates | LOCAL: {local}")
-    if local:
-        dataset = read_csv("Todos_current", path=DATA_PATH)
-        header = dataset.pop(0)
-        dataset = [row_to_dict(row, header) for row in dataset]
-    else:
-        dataset = sheet_reader(SHEET_ID, "Todos!A1:AG2583")
-        header = dataset[0].keys()
-        table = make_table(header, dataset)
-        write_csv(table, "Todos_current", path=DATA_PATH)
-        print(f"\t * Test {len(dataset)} rows")
-        error_lines = verification_process(dataset, header)
-        if error_lines:
-            # Writing report
-            date = datetime.now()
-            str_date = date.strftime("%y-%b-%d")
-            write_csv("\n".join(error_lines), f"{str_date}_errors",
-                      path="errors")
-            print(f"\n\t ** {len(error_lines)} fails **")
-        else:
-            print("\t OK. ")
-    if not os.path.isfile('dataset/Todos_old.csv'):
-        write_csv(table, "Todos_old", path=DATA_PATH)
-        print("ALL IS UPDATED :)")
-        return 0
-    diff = compare(
-        load_csv(open(f'{DATA_PATH}/Todos_old.csv'), key='person_id'),
-        load_csv(open(f'{DATA_PATH}/Todos_current.csv'), key='person_id'),
-    )
-    if diff["changed"]:
-        make_banner("There are changes")
-        send_changes(diff["changed"])
-    if diff["added"]:
-        make_banner("There are additions")
-        send_additions(diff["added"])
-    if diff["removed"]:
-        make_banner("There are deletes")
-        log_deletes(diff["removed"])
-    make_banner("Finish, have a nice day :D")
 
 
 if __name__ == "__main__":
