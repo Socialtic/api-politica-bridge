@@ -14,7 +14,6 @@ HEADERS = {
     "Authorization": f"{TOKEN['token_type']} {TOKEN['token_value']}"
 }
 
-
 class Catalogues:
     DEGREES_OF_STUDIES = ['', 'ELEMENTARY', 'HIGH SCHOOL', 'ASSOCIATE DEGREE',
                           'BACHELOR’S DEGREE',
@@ -206,11 +205,13 @@ def make_person_struct(dataset, contest_chambers, header):
 
 def make_other_names_struct(dataset):
     result = []
+    other_name_id = 0
     for i, data in enumerate(dataset, start=1):
         # TODO: check multinickname case
         if data["nickname"]:
+            other_name_id += 1
             result.append({
-                "other_name_id": i,
+                "other_name_id": other_name_id,
                 "is_deleted": data["is_deleted"],
                 "other_name_type": 2, # TODO
                 "name": data["nickname"],
@@ -222,14 +223,16 @@ def make_other_names_struct(dataset):
 def make_person_profession(dataset, professions):
     lines = []
     pattern = r'^profession_[2-6]$'
+    person_profession_id = 0
     for i, data in enumerate(dataset, start=1):
         for field in data:
             if re.search(pattern, field):
                 profession = data[field].lower()
                 if profession:
                     profession_id = professions.index(profession) + 1
+                    person_profession_id += 1
                     lines.append({
-                        "person_profession_id": i,
+                        "person_profession_id": person_profession_id,
                         "is_deleted": data["is_deleted"],
                         "person_id": i,
                         "profession_id": profession_id
@@ -295,9 +298,11 @@ def get_owner_id(dataset, field_data, search_field):
     return -1
 
 
-def make_url_struct(dataset, url_types, coalitions=[], parties=[], owner_type=""):
+def make_url_struct(dataset, url_types, url_id_counter, coalitions=[],
+                    parties=[], owner_type=""):
     lines = []
     field_pattern = r'(^Website$|^URL_(\w)*$)'
+    url_id = url_id_counter
     if owner_type in ["coalition", "party"]:
         for i, data in enumerate(dataset, start=1):
             for field in data:
@@ -310,8 +315,9 @@ def make_url_struct(dataset, url_types, coalitions=[], parties=[], owner_type=""
                             else:
                                 owner_id = get_owner_id(parties, data["Abreviacion"],
                                                         "abbreviation")
+                            url_id += 1
                             lines.append({
-                                "url_id": i,
+                                "url_id": url_id,
                                 "url": data[field],
                                 "url_type": get_url_type_id(field, url_types),
                                 "description": "",
@@ -325,8 +331,9 @@ def make_url_struct(dataset, url_types, coalitions=[], parties=[], owner_type=""
                 if re.search(field_pattern, field) and field != "URL_others":
                     if data[field]:
                         for url in data[field].split(','):
+                            url_id += 1
                             row = {
-                                    "url_id": i,
+                                    "url_id": url_id,
                                     "is_deleted": data["is_deleted"],
                                     "url": url.strip(),
                                     "url_type": get_url_type_id(field, url_types),
@@ -339,8 +346,9 @@ def make_url_struct(dataset, url_types, coalitions=[], parties=[], owner_type=""
                     for url in data[field].split(","):
                         clean_url = url.strip()
                         if clean_url:
+                            url_id += 1
                             row = {
-                                "url_id": i,
+                                "url_id": url_id,
                                 "is_deleted": data["is_deleted"],
                                 "url": clean_url,
                                 "url_type": get_url_type_id(field, url_types, clean_url),
@@ -349,7 +357,7 @@ def make_url_struct(dataset, url_types, coalitions=[], parties=[], owner_type=""
                                 "owner_id": i
                             }
                             lines.append(row)
-    return lines
+    return lines, url_id
 
 
 def colors_to_list(data):
@@ -444,6 +452,16 @@ def send_data(base_url, endpoint, dataset):
             json.dump(deleted, f)
 
 
+def get_urls(api_base):
+    endpoint = "url"
+    r = requests.get(api_base + endpoint, headers=HEADERS)
+    if r.status_code != 200:
+        print("[ERROR] {endpoint}: {r.status_code}")
+        return []
+    else:
+        return r.json()
+
+
 def get_url_ids(urls, old_url, person_id):
     return [url["id"] for url in urls if url["url"] == old_url and url["owner_id"] == person_id]
 
@@ -486,7 +504,8 @@ def update_data(field, changes, api_base, person_id):
         return {"error": f"person #{person_id} not found", "success": False}
     return True
 
-def update_person_data(data, api_base):
+
+def update_person_data(data, api_base, logger):
     """TODO: Docstring for update_person_data.
 
     :arg1: TODO
@@ -494,6 +513,7 @@ def update_person_data(data, api_base):
 
     """
     pass
+
 
 def update_other_name_data(data, api_base):
     """TODO: Docstring for update_other_name_data.
@@ -503,6 +523,7 @@ def update_other_name_data(data, api_base):
 
     """
     pass
+
 
 def update_membership_data(data, api_base):
     """TODO: Docstring for update_membership.
@@ -524,14 +545,14 @@ def update_profession_data(data, api_base):
     pass
 
 
-def update_url_data(data, api_base, url_types):
-    endpoint = "url"
-    r = requests.get(api_base + endpoint, headers=HEADERS)
-    breakpoint()
-    urls = r.json()
+def update_url_data(data, api_base, urls, url_types, logger):
+    # Week 1 = 3 May
+    WEEK = get_update_week()
+    endpoint = 'url'
+    field = data["field"]
     # Information removed
     if not data["new"]:
-        url_ids = get_url_ids(urls, data["old"], data["person_id"])
+        url_ids = get_url_ids(urls, data["old"], int(data["person_id"]))
         for url_id in url_ids:
             r = requests.delete(f"{api_base}{endpoint}/{url_id}",
                                 headers=HEADERS)
@@ -546,22 +567,33 @@ def update_url_data(data, api_base, url_types):
                 "owner_type": 4 if field == "source_of_truth" else 1,
                 "owner_id": data["person_id"]
             }
-            r = requests.post(f"{api_base}{endpoint}", json=url_data,
+            r = requests.post(f"{api_base}{endpoint}/", json=url_data,
                               headers=HEADERS)
     # Update a previous url
     else:
-        for url in urls:
-            if data["person_id"] == url["owner_id"]:
-                url_data = {
-                    "url": data["new"].strip(" \n\r"),
-                    "url_type": url["url_type"],
-                    "description": '',
-                    "owner_type": Catalogues.URL_OWNER_TYPES.index(url["owner_type"]),
-                    "owner_id": data["owner_id"],
-                }
-                r = requests.put(f"{api_base}{endpoint}/{data['person_id']}",
-                                 data=url, headers=HEADERS)
-    prinf(f"#{person_id} {r.request.method}: {r.status_code}")
+        # TODO: Check multi URLs
+        new_urls = set(data["old"].split(',')) - set(data["new"].split(','))
+        for new_url in data["new"].split(','):
+            for url in urls:
+                if int(data["person_id"]) == url["owner_id"] and data["old"] == url["url"]:
+                    url_type = "_".join(url["url_type"].split()).lower()
+                    new_url_data = {
+                        "url": new_url.strip(" \n\r"),
+                        "url_type": url_types.index(url_type) + 1,
+                        "description": '',
+                        # TODO: make a function for this
+                        "owner_type": Catalogues.URL_OWNER_TYPES.index(url["owner_type"]),
+                        "owner_id": int(data["person_id"]),
+                    }
+                    r = requests.put(f"{api_base}{endpoint}/{url['id']}",
+                                    json=new_url_data, headers=HEADERS)
+    try:
+        log_msg = f"""{WEEK},{field},{r.request.method},{r.status_code},{data['person_id']},"{data['old']}","{data['new']}" """
+    except UnboundLocalError:
+        breakpoint()
+        print()
+
+    logger.info(log_msg)
 
 
 def search_by_name(dataset, name):

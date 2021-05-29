@@ -100,15 +100,21 @@ def main():
     # TODO: check ids
     url_header = ["url_id", "url", "description", "url_type", "owner_type",
                   "owner_id"]
-    url_data = make_url_struct(dataset, url_types)
+    url_id_counter = 0
+    url_data, url_id_counter = make_url_struct(dataset, url_types, url_id_counter)
     # Getting parties and coalition URLs
     party_url = sheet_reader(CAPTURE_SHEET_ID, PARTY_URL_RANGE)
     coalition_url = sheet_reader(CAPTURE_SHEET_ID, COALITION_URL_RANGE)
 
-    url_data += make_url_struct(party_url, url_types, coalition_data,
-                                party_data, "party")
-    url_data += make_url_struct(coalition_url, url_types, coalition_data,
-                                party_data, "coalition")
+    url_party, url_id_counter = make_url_struct(party_url, url_types,
+                                                url_id_counter, coalition_data,
+                                                party_data, "party")
+    url_coalition, url_id_counter = make_url_struct(coalition_url, url_types,
+                                                    url_id_counter,
+                                                    coalition_data, party_data,
+                                                    "coalition")
+    url_data += url_party
+    url_data += url_coalition
     url_table = make_table(url_header, url_data)
     write_csv(url_table, f"{CSV_DB_PATH}/url")
     for url in url_data:
