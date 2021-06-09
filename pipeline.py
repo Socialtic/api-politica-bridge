@@ -12,9 +12,9 @@ from utils import (make_banner, verification_process,
 # ID sheets
 CAPTURE_SHEET_ID = "1mk9LTI5RBYwrEPzILeDY925VJbLVmEoZyRzaa1gZ_hk"
 # Capture Read Ranges
-READ_RANGE = "Todos!A1:AG3062"
-PARTY_URL_RANGE = "URL_logo_partido_coal!H1:P62"
-COALITION_URL_RANGE = "URL_logo_partido_coal!A1:G37"
+READ_RANGE = "Todos!A1:AG3196"
+COALITION_URL_RANGE = "URL_logo_partido_coal!A1:H37"
+PARTY_URL_RANGE = "URL_logo_partido_coal!I1:R62"
 CSV_DB_PATH = 'csv_db'
 API_BASE = 'http://localhost:5000/'
 # API endpoints
