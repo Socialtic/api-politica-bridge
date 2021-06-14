@@ -13,7 +13,8 @@ from utils import (make_table, write_csv, make_banner, update_data, read_csv,
                    make_membership, make_url_struct, get_capture_lines,
                    verification_process, update_url_data, update_person_data,
                    update_membership_data, update_profession_data,
-                   update_other_name_data, get_update_week)
+                   update_other_name_data, get_update_week, get_urls)
+
 
 # Updates logger
 update_logger = logging.getLogger("updates")
@@ -65,23 +66,22 @@ deletes_logger.addHandler(stream_handler)
 SHEET_ID = "1mk9LTI5RBYwrEPzILeDY925VJbLVmEoZyRzaa1gZ_hk"
 DATA_PATH = 'dataset'
 API_BASE = "http://localhost:5000/"
-PERSON_RANGE = "Todos!A1:AG2785"
+PERSON_RANGE = "Todos!A1:AG3220"
 COALITION_URL_RANGE = "URL_logo_partido_coal!A1:H37"
 PARTY_URL_RANGE = "URL_logo_partido_coal!I1:R62"
 RANGES = {
     "person": PERSON_RANGE, "party_urls": PARTY_URL_RANGE,
     "coalition_urls": COALITION_URL_RANGE
 }
-# Week 1 = 3 May
-WEEK = get_update_week()
 
 url_pattern = r'(^Website$|^source_of_truth$|^URL_(\w)*$)'
 profession_pattern = r'^profession_[2-6]$'
-local = False
 
+URLS = get_urls(API_BASE)
+WEEK = get_update_week()
 
 def main():
-    make_banner(f"Checking for updates | LOCAL: {local}")
+    make_banner(f"Checking for updates")
     for name, read_range in RANGES.items():
         dataset = sheet_reader(SHEET_ID, read_range)
         header = dataset[0].keys()
@@ -125,13 +125,12 @@ def send_changes(changed):
                 "old": changes[0],
                 "new": changes[1],
             }
-            log_msg = f"""CHANGE,{WEEK},{data['person_id']},"{data['old']}","{data['new']}",{field}"""
             # first_name, last_name, full_name, date_birth, gender,
             # dead_or_alive, last_degree_of_studies, nickname, state, area
             if field in ["first_name", "last_name", "full_name", "date_birth",
                          "gender", "dead_or_alive", "last_degree_of_studies",
                          "state", "area"]:
-                update_person_data(data, API_BASE)
+                update_person_data(data, API_BASE, update_logger)
             elif field == "nickname":
                 update_other_name_data(data, API_BASE)
             # profession_[2-6]
@@ -140,17 +139,18 @@ def send_changes(changed):
             # Website, URL_FB_page, URL_FB_profile, URL_IG, URL_TW, URL_others,
             # URL_photo, source_of_truth
             elif re.search(url_pattern, field):
-                update_url_data(data, API_BASE, url_types)
+                update_url_data(data, API_BASE, URLS, url_types, update_logger)
             # start_date, end_date, membership_type, is_substitute,
             elif field in ["start_date", "end_date", "membership_type",
                            "is_substitute", "abbreviation", "coalition"]:
                 update_membership_data(data, API_BASE)
+            log_msg = f"""{WEEK},{field},{data['person_id']},"{data['old']}","{data['new']}" """
             update_logger.info(log_msg)
 
 
 def send_additions(added):
     # PERSON
-    """person_header = ["full_name", "first_name", "last_name", "date_birth",
+    person_header = ["full_name", "first_name", "last_name", "date_birth",
                      "gender", "dead_or_alive", "last_degree_of_studies",
                      "contest_id"]
     person_data = make_person_struct(added, contest_chambers, person_header)
@@ -187,16 +187,16 @@ def send_additions(added):
     url_data = make_url_struct(added, url_types)
     if url_data:
         print("\t * SENDING URL DATA")
-        send_data(API_BASE, 'url', url_data)"""
+        send_data(API_BASE, 'url', url_data)
     lines = get_capture_lines(added)
     print()
     for line in lines:
-        add_logger.info(f"ADD,{WEEK},{line}")
+        add_logger.info(f"{WEEK},{line}")
 
 
 def log_deletes(deletes):
     for line in get_capture_lines(deletes):
-        deletes_logger.info(f"DELETE,{WEEK},{line}")
+        deletes_logger.info(f"{WEEK},{line}")
 
 
 if __name__ == "__main__":
