@@ -22,11 +22,7 @@ def membership_type_check(membership):
     is before June 2, False otherwise
     :rtype: bool
     """
-    current_date = datetime.datetime.now()
-    limit_date = datetime.datetime(2021, 6, 2)
-    member_condition = membership == "campaigning_politician"
-    date_condition = current_date <= limit_date
-    return True if member_condition and date_condition else False
+    return True if membership in ["campaigning_politician", "officeholder", "party_leader"] else False
 
 
 def date_format_check(date, date_type):
