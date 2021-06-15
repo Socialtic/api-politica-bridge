@@ -15,6 +15,8 @@ HEADERS = {
 }
 
 class Catalogues:
+    """**Common catalogues for table's construction**
+    """
     DEGREES_OF_STUDIES = ['', 'ELEMENTARY', 'HIGH SCHOOL', 'ASSOCIATE DEGREE',
                           'BACHELOR’S DEGREE',
                           'UNIVERSITY 1ST PROFESSIONAL DEGREE',
@@ -91,6 +93,15 @@ def row_to_dict(row, header, test_fields=[]):
 
 
 def verification_process(dataset, header):
+    """**Function that run the verifications**
+
+    :param dataset: List of dicts with GSheet header as keys and row as values
+    :type dataset: list
+    :param header: GSheet header as list
+    :type header: list
+    :return: List with comma separated strings that contains errors if any
+    :rtype: list
+    """
     lines = []
     # Loop to read every row
     with ProgressBar(max_value=len(dataset)) as bar:
@@ -130,6 +141,10 @@ def write_csv(data, name, path=""):
 
     :param data: A comma separated string
     :type data: str
+    :param name: Name of the file
+    :type:
+    :param path: 
+    :type: str, optional
     """
     full_path = os.path.join(path, name)
     with open(f"{full_path}.csv", 'w', encoding="utf-8") as f:
@@ -137,12 +152,30 @@ def write_csv(data, name, path=""):
 
 
 def read_csv(file_name, path=""):
+    """**Reads a csv file**
+
+    :param file_name: File name
+    :type file_name: str
+    :param path: Path of the file, defaults to ""
+    :type path: str, optional
+    :return: List of lists with csv rows data
+    :rtype: list
+    """
     full_path = os.path.join(path, file_name)
     with open(full_path + ".csv", "r", encoding="utf-8") as f:
         return [line.split(",") for line in f.read().rstrip("\n").split("\n")]
 
 
 def make_table(header, dataset):
+    """**Fuction that make a csv table from a list of data**
+
+    :param header: Header of the table
+    :type header: list
+    :param dataset: Data of the table
+    :type dataset: list
+    :return: Table as string
+    :rtype: str
+    """
     table = ','.join(header) + '\n'
     for row_data in dataset:
         for field in header:
@@ -159,6 +192,11 @@ def make_table(header, dataset):
 
 
 def get_contest_id(data, contest_chambers):
+    """**Gets the contest id based on Catalogues**
+
+    :return: The contest id if any, else
+    :rtype: int
+    """
     # Gubernaturas
     if data["role_type"] == "governmentOfficer":
         location = data["state"].lower()
@@ -175,6 +213,19 @@ def get_contest_id(data, contest_chambers):
 
 
 def make_person_struct(dataset, contest_chambers, header):
+    """**Function that makes person data**
+
+    This function build a list of dicts with valid person data for the API
+
+    :param dataset: Data from GSheet
+    :type dataset: list
+    :param contest_chambers: List of static table contest
+    :type contest_chambers: list
+    :param header: Header of GSheet
+    :type header: list
+    :return: List with dicts that contains person data
+    :rtype: list
+    """
     people = []
     for data in dataset:
         row = dict()
@@ -204,6 +255,15 @@ def make_person_struct(dataset, contest_chambers, header):
 
 
 def make_other_names_struct(dataset):
+    """**Makes other-names data**
+
+    This function makes a valid list of other-name data for the API
+
+    :param dataset: Data from GSheet
+    :type dataset: list
+    :return: List with dicts that contains other-name data
+    :rtype: list
+    """
     result = []
     other_name_id = 0
     for i, data in enumerate(dataset, start=1):
@@ -221,7 +281,19 @@ def make_other_names_struct(dataset):
 
 
 def make_person_profession(dataset, professions):
+    """**Makes person-profession data**
+
+    This function makes a valid list of person-profession data for the API from capture GSheet  
+
+    :param dataset: Data from GSheet
+    :type dataset: list
+    :param professions: Professions list from static table "Catalogue profession"
+    :type professions: list
+    :return: List with dicts that contains person-profession data
+    :rtype: list
+    """
     lines = []
+    # Search only on this columns
     pattern = r'^profession_[2-6]$'
     person_profession_id = 0
     for i, data in enumerate(dataset, start=1):
@@ -241,6 +313,23 @@ def make_person_profession(dataset, professions):
 
 
 def make_membership(dataset, parties, coalitions, contest_chambers, header):
+    """**Makes membership data**
+
+    This functions makes a valid list of membership data for the API
+
+    :param dataset: Data from GSheet
+    :type dataset: list
+    :param parties: Party list from static table "party"
+    :type parties: list
+    :param coalitions: Coalition list from static table "coalition"
+    :type coalitions: list
+    :param contest_chambers: constest-chamber list from static table "contest"
+    :type contest_chambers: list
+    :param header: Header of GSheet
+    :type header: list
+    :return: List with dicts that contains membership data
+    :rtype: list
+    """
     lines = []
     for i, data in enumerate(dataset, start=1):
         if data["coalition"]:
@@ -269,28 +358,47 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header):
     return lines
 
 
-def get_row_urls(row):
-    pattern = r'(^Website$|^URL_(\w)*$)'
-    return {field: row[field] for field in row if re.search(pattern, field) and field != "URL_others"}
-
-
 def get_url_type_id(field, url_types, url=""):
+    """**Gets the url type id**
+
+    Given a list of url types this function gets the id given by the
+    field position in the list or the domain in the url
+
+    :param field: Column field from the GSheet
+    :type field: list
+    :param url_types: Url types from static table "url_types"
+    :type url_types: list
+    :param url: Current url from GSheet, defaults to ""
+    :type url: str, optional
+    :return: Url type id
+    :rtype: int
+    """
     email_pattern = r'^[\w.+-]+@[\w-]+\.[\w.-]+$'
+    # Searching by domain
     if field == "URL_others":
         for u_type in url_types:
             if u_type.lower() in url:
                 return url_types.index(u_type) + 1
             elif re.search(email_pattern, url):
                 return url_types.index("email") + 1
+        # Url type not found, return 0
         return 0
+    # Searching by column field
     else:
         return url_types.index(Catalogues.URL_TYPES[field].lower()) + 1
 
 
 def get_owner_id(dataset, field_data, search_field):
-    """TODO: Docstring for get_owner_type.
-    :returns: TODO
+    """**Gets party or coalition owner id** 
 
+    :param dataset: Data from GSheet
+    :type dataset: list
+    :param field_data: Value of the cell
+    :type field_data: str
+    :param search_field: Column field
+    :type search_field: str
+    :return: Owner id
+    :rtype: int
     """
     for i, data in enumerate(dataset, start=1):
         if data[search_field].lower() == field_data.lower():
@@ -300,6 +408,26 @@ def get_owner_id(dataset, field_data, search_field):
 
 def make_url_struct(dataset, url_types, url_id_counter, coalitions=[],
                     parties=[], owner_type=""):
+    """**Makes url data**
+
+    This function makes a valid list of url data for the API
+
+    :param dataset: Data from GSheet
+    :type dataset: list
+    :param url_types: List with url types
+    :type url_types: list
+    :param url_id_counter: Incremental counter to carry the url ids
+    :type url_id_counter: int
+    :param coalitions: Coalitions list, defaults to []
+    :type coalitions: list, optional
+    :param parties: Parties list, defaults to []
+    :type parties: list, optional
+    :param owner_type: Url owner type, defaults to ""
+    :type owner_type: str, optional
+    :return: List of dicts that contains url data and the ids count 
+    :rtype: list, int
+    """
+    # TODO: refactor this stuff :(
     lines = []
     field_pattern = r'(^Website$|^URL_(\w)*$)'
     url_id = url_id_counter
@@ -360,14 +488,15 @@ def make_url_struct(dataset, url_types, url_id_counter, coalitions=[],
     return lines, url_id
 
 
-def colors_to_list(data):
-    for row in data:
-        colors_list = row["colors"].split(",")
-        row["colors"] = [color.strip("' ") for color in colors_list]
-    return data
-
 
 def get_dummy_data(endpoint):
+    """**Return dommy data based on the enpoint**
+
+    :param endpoint: Endpoint of the API
+    :type endpoint: str
+    :return: Dummy data valid for the API
+    :rtype: dict
+    """
     if endpoint == "person":
         dummy_data = {
             "full_name": '',
@@ -419,6 +548,15 @@ def get_dummy_data(endpoint):
 
 
 def send_data(base_url, endpoint, dataset):
+    """**Sends data to the API**
+
+    :param base_url: Base of the url API 
+    :type base_url: str
+    :param endpoint: Current endpoint
+    :type endpoint: str
+    :param dataset: List of dicts with valid data to the endpoint of the API
+    :type dataset: list
+    """
     full_url = base_url + endpoint + '/'
     deleted = []
     with ProgressBar(max_value=len(dataset), redirect_stdout=True) as bar:
@@ -453,6 +591,13 @@ def send_data(base_url, endpoint, dataset):
 
 
 def get_urls(api_base):
+    """**Gets urls saved in the API
+
+    :param api_base: Base of the url API
+    :type api_base: str
+    :return: List with dicts that contains url data
+    :rtype: list
+    """
     endpoint = "url"
     r = requests.get(api_base + endpoint, headers=HEADERS)
     if r.status_code != 200:
@@ -462,96 +607,65 @@ def get_urls(api_base):
         return r.json()
 
 
-def get_url_ids(urls, old_url, person_id):
-    return [url["id"] for url in urls if url["url"] == old_url and url["owner_id"] == person_id]
+def get_url_ids(urls, current_url, person_id):
+    """**Gets the url id**
 
-
-def update_data(field, changes, api_base, person_id):
-    # Tables to modify: other-name
-    if field == "nickname":
-        endpoint = "other-name"
-        r = requests.get(api_base + endpoint, headers=HEADERS)
-        other_name_data = r.json()
-        for name in other_name_data:
-            # TODO: Multi nicknames
-            if person_id == str(name["person_id"]):
-                name["name"] = changes[1]
-                other_type = Catalogues.OTHER_NAMES_TYPES.index(name["other_name_type_id"])
-                name["other_name_type"] = other_type
-                full_endpoint = f"{api_base}{endpoint}/{name['id']}"
-                r = requests.put(full_endpoint, json=name, headers=HEADERS)
-                return r
-        breakpoint()
-        # It's a new nickname
-        new_data = {
-            "name": changes[1],
-            "other_name_type": 2, # TODO
-            "person_id": person_id
-        }
-        r = requests.post(api_base + endpoint, json=new_data, headers=HEADERS)
-        return r
-    elif field in ["start_date", "end_date"]:
-        endpoint = "membership"
-        r = requests.get(api_base + endpoint, headers=HEADERS)
-        memberships = r.json()["memberships"]
-        for membership in memberships:
-            if person_id == membership["person_id"]:
-                membership_id = membership["id"]
-                membership[field] = changes[1]
-                r = requests.put(f"{api_base}{endpoint}/{membership_id}",
-                                 data=membership, headers=HEADERS)
-                return r
-        return {"error": f"person #{person_id} not found", "success": False}
-    return True
+    :param urls: Urls data
+    :type urls: list
+    :param old_url: Current url
+    :type old_url: str
+    :param person_id: Person id in the API
+    :type person_id: int
+    :return: List of all urls that match url on the API equals to
+     current url and person id equals to owner id in the API
+    :rtype: list
+    """
+    return [url["id"] for url in urls if url["url"] == current_url and url["owner_id"] == person_id]
 
 
 def update_person_data(data, api_base, logger):
-    """TODO: Docstring for update_person_data.
+    """**Update a single person data on the API**
 
-    :arg1: TODO
-    :returns: TODO
-
+    :param data: Data with person id, changed field, old and new values
+    :type data: dict
+    :param api_base: Base of url API    
+    :type api_base: str
+    :param logger: Logger object
+    :type logger: object
     """
+    # TODO: finish this function
     WEEK = get_update_week()
     endpoint = "person"
     field = data["field"]
     persons = read_csv("person.person.csv", path="  ")
 
 
-
-
-
 def update_other_name_data(data, api_base):
-    """TODO: Docstring for update_other_name_data.
-
-    :arg1: TODO
-    :returns: TODO
-
-    """
     pass
 
 
 def update_membership_data(data, api_base):
-    """TODO: Docstring for update_membership.
-
-    :arg1: TODO
-    :returns: TODO
-
-    """
     pass
 
 
 def update_profession_data(data, api_base):
-    """TODO: Docstring for update_profession_data.
-
-    :arg1: TODO
-    :returns: TODO
-
-    """
     pass
 
 
 def update_url_data(data, api_base, urls, url_types, logger):
+    """**Update url data**
+
+    :param data: Data with person id, changed field, old and new values
+    :type data: dict
+    :param api_base: Base of url API    
+    :type api_base: str
+    :param urls: Urls on the API in a list
+    :type: list
+    :param url_types: Url types catalogue
+    :type: list
+    :param logger: Logger object
+    :type logger: object
+    """
     # Week 1 = 3 May
     WEEK = get_update_week()
     endpoint = 'url'
@@ -639,9 +753,16 @@ def update_url_data(data, api_base, urls, url_types, logger):
 
 
 def search_by_name(dataset, name):
-    """TODO: Docstring for search_by_name.
-    :returns: TODO
+    """**Get person id by name**
 
+    Function that gets id of a person from the API by name. It's a nayve implementation
+
+    :param dataset: Data from GSheet
+    :type dataset: list
+    :param name: Person name
+    :type name: str
+    :return: Person id that match by full name and that row  as dict
+    :rtype: int, dict
     """
     for i, row in enumerate(dataset):
         if row["full_name"] == name:
@@ -650,14 +771,13 @@ def search_by_name(dataset, name):
 
 
 def get_capture_lines(dataset):
-    """Genera una lista con lineas de captura
+    """**Generate dict data as in GSheet**
 
-    Función encargada de generar lineas de captura separadas por comas y
-    las regresa en una lista
+    Function that makes comma separated data as in GSheet and returns it as a list
 
-    :param dataset: Lista de diccionarios con la información de captura
+    :param dataset: Data from GSheet as dict
     :type: list
-    :returns: Lista con lineas de captura separadas por comas
+    :returns: Data as list of csv strings
     :rtype: list
     """
     result = []
@@ -700,7 +820,7 @@ def get_capture_lines(dataset):
 
 
 def get_update_week():
-    """Get current update week number
+    """**Get current update week number**
 
     Calculate current update process week number with respect to first
     update process week (2021, 5, 3)
@@ -711,4 +831,3 @@ def get_update_week():
     zero_week_date = date(2021, 5, 3)
     current_week = date.today()
     return current_week.isocalendar()[1] - zero_week_date.isocalendar()[1] + 1
-

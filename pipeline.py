@@ -69,7 +69,6 @@ def main():
         del other_name["other_name_id"]
 
     #  PERSON-PROFESSION
-    # TODO: Check ids
     person_profession_header = ["person_profession_id", "person_id",
                                 "profession_id"]
     person_profession_data = make_person_profession(dataset,
@@ -97,7 +96,6 @@ def main():
 
 
     # URL
-    # TODO: check ids
     url_header = ["url_id", "url", "description", "url_type", "owner_type",
                   "owner_id"]
     url_id_counter = 0
@@ -121,7 +119,7 @@ def main():
         del url["url_id"]
     print("\t * Ok.")
 
-    make_banner("Sending data to API")
+    make_banner("(3/3) SEND DATA TO API")
     # AREA (static)
     print("\t * AREA")
     send_data(API_BASE, 'area', area_data)
