@@ -633,11 +633,7 @@ def update_person_data(data, api_base, logger):
     :param logger: Logger object
     :type logger: object
     """
-    # TODO: finish this function
-    WEEK = get_update_week()
-    endpoint = "person"
-    field = data["field"]
-    persons = read_csv("person.person.csv", path="  ")
+    pass
 
 
 def update_other_name_data(data, api_base):
