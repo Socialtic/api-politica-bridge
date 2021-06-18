@@ -56,6 +56,20 @@ def make_banner(title):
     print()
 
 
+def colors_to_list(data):
+    """**Convert a string of colors to list**
+
+    :param data: Data from GSheet
+    :type: list
+    :return: A list of colors
+    "rtype: list
+    """
+    for row in data:
+        colors_list = row["colors"].split(",")
+        row["colors"] = [color.strip("' ") for color in colors_list]
+    return data
+
+
 def get_columns_data(data, pattern):
     """**Gets data from columns based on a text pattern**
 
@@ -143,7 +157,7 @@ def write_csv(data, name, path=""):
     :type data: str
     :param name: Name of the file
     :type:
-    :param path: 
+    :param path:
     :type: str, optional
     """
     full_path = os.path.join(path, name)
@@ -283,7 +297,7 @@ def make_other_names_struct(dataset):
 def make_person_profession(dataset, professions):
     """**Makes person-profession data**
 
-    This function makes a valid list of person-profession data for the API from capture GSheet  
+    This function makes a valid list of person-profession data for the API from capture GSheet
 
     :param dataset: Data from GSheet
     :type dataset: list
@@ -389,7 +403,7 @@ def get_url_type_id(field, url_types, url=""):
 
 
 def get_owner_id(dataset, field_data, search_field):
-    """**Gets party or coalition owner id** 
+    """**Gets party or coalition owner id**
 
     :param dataset: Data from GSheet
     :type dataset: list
@@ -424,7 +438,7 @@ def make_url_struct(dataset, url_types, url_id_counter, coalitions=[],
     :type parties: list, optional
     :param owner_type: Url owner type, defaults to ""
     :type owner_type: str, optional
-    :return: List of dicts that contains url data and the ids count 
+    :return: List of dicts that contains url data and the ids count
     :rtype: list, int
     """
     # TODO: refactor this stuff :(
@@ -550,7 +564,7 @@ def get_dummy_data(endpoint):
 def send_data(base_url, endpoint, dataset):
     """**Sends data to the API**
 
-    :param base_url: Base of the url API 
+    :param base_url: Base of the url API
     :type base_url: str
     :param endpoint: Current endpoint
     :type endpoint: str
@@ -628,7 +642,7 @@ def update_person_data(data, api_base, logger):
 
     :param data: Data with person id, changed field, old and new values
     :type data: dict
-    :param api_base: Base of url API    
+    :param api_base: Base of url API
     :type api_base: str
     :param logger: Logger object
     :type logger: object
@@ -653,7 +667,7 @@ def update_url_data(data, api_base, urls, url_types, logger):
 
     :param data: Data with person id, changed field, old and new values
     :type data: dict
-    :param api_base: Base of url API    
+    :param api_base: Base of url API
     :type api_base: str
     :param urls: Urls on the API in a list
     :type: list
