@@ -20,10 +20,10 @@ API_BASE = 'http://localhost:5000/'
 # API endpoints
 ENDPOINTS = ["area", "chamber", "role", "coalition", "party", "person",
              "other-name", "profession", "membership", "contest", "url"]
-
+DB_TYPE = sys.argv[1]
 
 def main():
-    make_banner("VERIFICATIONS")
+    make_banner("(1/3) VERIFICATIONS")
     # Getting sheet data as list of list
     dataset = sheet_reader(CAPTURE_SHEET_ID, READ_RANGE)
     # Getting header
@@ -41,9 +41,14 @@ def main():
         print("\t OK. ")
 
     for data in dataset:
-        data["is_deleted"] = True if not data["person_id"] else False
+        empty_person_id = not data["person_id"]
+        is_not_officerholder = data["membership_type"] != "officeholder"
+        if DB_TYPE == "local":
+            data["is_deleted"] = empty_person_id
+        elif DB_TYPE == "fb":
+            data["is_deleted"] = is_not_officerholder or empty_person_id
     # PREPROCESSING DYNAMIC DATA
-    make_banner("Build dynamic data")
+    make_banner("(2/3) BUILD DYNAMIC DATA")
 
     # PERSON
     person_header = ["person_id", "full_name", "first_name", "last_name", "date_birth",
