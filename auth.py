@@ -1,6 +1,6 @@
-""" Manejo de autenticación con Google
+""" Authentication management with Google
 
-spreadsheets para manipulación de hojas de calculo
+Using spreadsheets endpoint for manipulation
 """
 from __future__ import print_function
 from googleapiclient.discovery import build

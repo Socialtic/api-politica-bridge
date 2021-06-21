@@ -22,6 +22,7 @@ ENDPOINTS = ["area", "chamber", "role", "coalition", "party", "person",
              "other-name", "profession", "membership", "contest", "url"]
 DB_TYPE = sys.argv[1]
 
+
 def main():
     make_banner("(1/3) VERIFICATIONS")
     # Getting sheet data as list of list
@@ -47,13 +48,16 @@ def main():
             data["is_deleted"] = empty_person_id
         elif DB_TYPE == "fb":
             data["is_deleted"] = is_not_officerholder or empty_person_id
+        else:
+            print("[ERROR]: Insert valid values: <local | fb>")
+            return -1
     # PREPROCESSING DYNAMIC DATA
     make_banner("(2/3) BUILD DYNAMIC DATA")
 
     # PERSON
-    person_header = ["person_id", "full_name", "first_name", "last_name", "date_birth",
-                     "gender", "dead_or_alive", "last_degree_of_studies",
-                     "contest_id"]
+    person_header = ["person_id", "full_name", "first_name", "last_name",
+                     "date_birth", "gender", "dead_or_alive",
+                     "last_degree_of_studies", "contest_id"]
     # This list is ready to be send to the API
     person_data = make_person_struct(dataset, contest_chambers, person_header)
     # Making a table for double check
@@ -99,12 +103,12 @@ def main():
     for membership in membership_data:
         del membership["membership_id"]
 
-
     # URL
     url_header = ["url_id", "url", "description", "url_type", "owner_type",
                   "owner_id"]
     url_id_counter = 0
-    url_data, url_id_counter = make_url_struct(dataset, url_types, url_id_counter)
+    url_data, url_id_counter = make_url_struct(dataset, url_types,
+                                               url_id_counter)
     # Getting parties and coalition URLs
     party_url = sheet_reader(CAPTURE_SHEET_ID, PARTY_URL_RANGE)
     coalition_url = sheet_reader(CAPTURE_SHEET_ID, COALITION_URL_RANGE)
