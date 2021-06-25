@@ -165,7 +165,7 @@ def write_csv(data, name, path=""):
         f.write(data)
 
 
-def read_csv(file_name, path=""):
+def read_csv(file_name, path="", as_dict=False):
     """**Reads a csv file**
 
     :param file_name: File name
@@ -177,7 +177,12 @@ def read_csv(file_name, path=""):
     """
     full_path = os.path.join(path, file_name)
     with open(full_path + ".csv", "r", encoding="utf-8") as f:
-        return [line.split(",") for line in f.read().rstrip("\n").split("\n")]
+        data = [line.split(",") for line in f.read().rstrip("\n").split("\n")]
+    if as_dict:
+        header = data.pop(0)
+        return [row_to_dict(row, header) for row in data]
+    else:
+        return data
 
 
 def make_table(header, dataset):
@@ -502,7 +507,6 @@ def make_url_struct(dataset, url_types, url_id_counter, coalitions=[],
     return lines, url_id
 
 
-
 def get_dummy_data(endpoint):
     """**Return dommy data based on the enpoint**
 
@@ -647,16 +651,34 @@ def update_person_data(data, api_base, logger):
     :param logger: Logger object
     :type logger: object
     """
-    pass
+    endpoint = "person"
+    # Getting people
+    people = read_csv(endpoint, path="csv_db/", as_dict=True)
+    # Week 1 = 3 May
+    WEEK = get_update_week()
+    field = data["field"]
+    # Getting person to be update
+    new_person_data = people[int(data["person_id"]) - 1]
+    # Get values to be cast
+    contest_id = new_person_data["contest_id"]
+    gender = new_person_data["gender"]
+    last_degree = new_person_data["last_degree_of_studies"]
+    is_alive = new_person_data["dead_or_alive"]
+    # Update the changed field
+    new_person_data[field] = data["new"]
+    # Casting data to be send
+    new_person_data["contest_id"] = int(contest_id)
+    new_person_data["gender"] = int(gender)
+    new_person_data["last_degree_of_studies"] = int(last_degree)
+    new_person_data["dead_or_alive"] = True if is_alive == "True" else False
+    r = requests.put(f"{api_base}{endpoint}/{data['person_id']}",
+                     json=new_person_data, headers=HEADERS)
+    log_msg = f"""{WEEK},{field},{r.request.method},{r.status_code},{data['person_id']},"{data['old']}","{data['new']}" """
+    logger.info(log_msg)
 
 
 def update_other_name_data(data, api_base):
     pass
-
-
-def update_membership_data(data, api_base):
-    pass
-
 
 def update_profession_data(data, api_base):
     pass
@@ -711,7 +733,7 @@ def update_url_data(data, api_base, urls, url_types, logger):
         # Update a single url
             r = False
             for url in urls:
-                if int(data["person_id"]) == url["owner_id"] and data["old"] == url["url"]:
+                if int(data["person_id"]) == int(url["owner_id"]) and data["old"] == url["url"]:
                     url_type = "_".join(url["url_type"].split()).lower()
                     new_url_data = {
                         "url": data["new"].strip(" \n\r"),
@@ -759,6 +781,41 @@ def update_url_data(data, api_base, urls, url_types, logger):
     except UnboundLocalError:
         print()
         breakpoint()
+    logger.info(log_msg)
+
+
+def update_membership_data(data, api_base, parties, coalitions, logger):
+    bool_fields = ["goes_for_coalition", "goes_for_reelection",
+                   "is_substitute", "changed_from_substitute"]
+    int_field_pattern = r".*_id"
+    # Week 1 = 3 May
+    WEEK = get_update_week()
+    endpoint = 'membership'
+    field = data["field"]
+    memberships = read_csv(endpoint, path="csv_db/", as_dict=True)
+    for membership in memberships:
+        if data["person_id"] == membership["person_id"]:
+            new_membership = membership
+    # Casting values
+    for key, value in new_membership.items():
+        if re.search(int_field_pattern, key):
+            new_membership[key] = int(value)
+        elif key in bool_fields:
+            new_membership[key] = True if value == "True" else False
+    if field == "membership_type":
+        new_membership[field] = Catalogues.MEMBERSHIP_TYPES.index(data["new"])
+    elif field == "abbreviation":
+        new_membership["party_id"] = parties.index(data["new"].lower()) + 1
+    elif field == "coalition":
+        if data["new"]:
+            new_membership["coalition_id"] = coalitions.index(data["new"].lower().strip()) + 1
+        else:
+            new_membership["coalition_id"] = -1
+    else:
+        new_membership[field] = data["new"]
+    r = requests.put(f"{api_base}{endpoint}/{new_membership['membership_id']}",
+                     json=new_membership, headers=HEADERS)
+    log_msg = f"""{WEEK},{field},{r.request.method},{r.status_code},{data['person_id']},"{data['old']}","{data['new']}" """
     logger.info(log_msg)
 
 
