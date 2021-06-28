@@ -678,9 +678,24 @@ def update_person_data(data, api_base, logger):
 
 
 def update_other_name_data(data, api_base):
-    pass
+    # Week 1 = 3 May
+    WEEK = get_update_week()
+    endpoint = 'other-name'
+    field = data["field"]
+    other_names = read_csv(endpoint, path="csv_db/", as_dict=True)
+    for name in other_names:
+        if data["person_id"] == name["person_id"]:
+            new_name = name
+    new_name["name"] = data["new"]
+    new_name["other_name_type"] = int(new_name["other_name_type"])
+    r = requests.put(f"{api_base}{endpoint}/{data['person_id']}", json=new_name,
+                     headers=HEADERS)
+    log_msg = f"""{WEEK},{field},{r.request.method},{r.status_code},{data['person_id']},"{data['old']}","{data['new']}" """
+    logger.info(log_msg)
+
 
 def update_profession_data(data, api_base):
+
     pass
 
 
