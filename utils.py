@@ -197,16 +197,19 @@ def make_table(header, dataset):
     """
     table = ','.join(header) + '\n'
     for row_data in dataset:
-        for field in header:
-            try:
-                cell = row_data[field].strip("\r\n ")
-                if ',' in row_data[field] :
-                    table += f'"{cell}",'
-                else:
-                    table += f'{cell},'
-            except AttributeError:
-                table += f"{row_data[field]},"
-        table += '\n'
+        if "is_deleted" in row_data.keys() and row_data["is_deleted"]:
+            continue
+        else:
+            for field in header:
+                try:
+                    cell = row_data[field].strip("\r\n ")
+                    if ',' in row_data[field] :
+                        table += f'"{cell}",'
+                    else:
+                        table += f'{cell},'
+                except AttributeError:
+                    table += f"{row_data[field]},"
+            table += '\n'
     return table
 
 
