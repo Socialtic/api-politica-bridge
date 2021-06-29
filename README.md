@@ -2,7 +2,28 @@
 
 Bridge to connect Google Spreadsheets with the [mx-elections-2021](https://github.com/Socialtic/mx-elections-2021) API.
 
+## Runing scripts
+
+### Pipeline
+
+Read data, process it and populate an empty database 
+
+* `python pipeline.py <local|fb>`
+	
+### Updater
+
+Compare data from GSheet and previously saved (`dataset/person_old.csv`) and
+update changes, additions and deletions on the API. 
+
+* `python updater.py`
+
 ## Dependencies
+
+* Install dependencies with:
+
+```
+$ pip install -r requirements.txt
+```
 
 * `python >= 3.6`
 
@@ -38,7 +59,10 @@ Static tables and catalogs
 * Profession
 * Url types
 
-With this information we can **populate an empty database** using `pipeline.py` module or **update** existing data using `updater.py` module. Also, the module `check_predictions.py` compare Facebook Url predictions with capture sheet and save the differences into `predictions/`.   
+With this information we can **populate an empty database** using `pipeline.py`
+module or **update** existing data using `updater.py` module. Also, the module
+`check_predictions.py` compare Facebook Url predictions with capture sheet and
+save the differences into `predictions/`.
 
 ## Modules
 
@@ -78,27 +102,32 @@ fields are the follow:
 3. Upload static and dynamic data to the API
 	* Additionally, the module saves a `csv` copy of database into `csv_db/`.
 
-**NOTE**: This module require an empty database from the API since it reads all information from capture sheet and sned it.
+**NOTE**: This module require an empty database from the API since it reads all
+information from capture sheet and sned it.
 
 ### 3. `updater.py` (WIP)
 
-This module compare current capture data (`dataset/person_current.csv`) with previous data (`dataset/person_old.csv`). The difference are sent to the API and logged into `logs/` in three different types:
+This module compare current capture data (`dataset/person_current.csv`) with
+previous data (`dataset/person_old.csv`). The difference are sent to the API
+and logged into `logs/` in three different types:
 
 1. Changes
 2. Additions
 3. Deletions
 
-Due to the time constraints of the project this module ishas a status of Work in Progress (WIP).
+Due to the time constraints of the project this module ishas a status of Work
+in Progress (WIP).
 
 #### Features
 
-* [ ] Replace automatically person_old.csv with person_current.csv information once the data update is complete. 
+* [ ] Replace automatically person_old.csv with person_current.csv information
+  once the data update is complete.
 * [ ] Update changed data
-	* [ ] URLs (Partially solved)
-	* [ ] Person Data
-	* [ ] Nicknames
-	* [ ] Proffesions
-	* [ ] Membership data
+	* [X] URLs (Partially solved)
+	* [X] Person Data
+	* [X] Nicknames
+	* [ ] Professions
+	* [X] Membership data
 * [X] Update added data
 * [X] Update removed data
 
