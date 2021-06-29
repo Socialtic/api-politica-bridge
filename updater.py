@@ -7,7 +7,7 @@ from static_tables import (area_data, chamber_data, role_data, coalition_data,
                            coalitions_catalogue, party_data, parties,
                            contest_data, contest_chambers, profession_data,
                            professions_catalogue, url_types)
-from utils import (make_table, write_csv, make_banner, update_data, read_csv,
+from utils import (make_table, write_csv, make_banner, read_csv,
                    row_to_dict, send_data, make_person_struct,
                    make_other_names_struct, make_person_profession,
                    make_membership, make_url_struct, get_capture_lines,
@@ -103,12 +103,13 @@ def main():
             load_csv(open(f'{DATA_PATH}/{name}_old.csv'), key=f'{name}_id'),
             load_csv(open(f'{DATA_PATH}/{name}_current.csv'), key=f'{name}_id'),
         )
-        breakpoint()
         if diff["changed"]:
             make_banner("There are changes")
             send_changes(diff["changed"])
         if diff["added"]:
             make_banner("There are additions")
+            for person in diff["added"]:
+                person["is_deleted"] = True if not person["person_id"] else False
             send_additions(diff["added"])
         if diff["removed"]:
             make_banner("There are deletes")
@@ -143,9 +144,8 @@ def send_changes(changed):
             # start_date, end_date, membership_type, is_substitute,
             elif field in ["start_date", "end_date", "membership_type",
                            "is_substitute", "abbreviation", "coalition"]:
-                update_membership_data(data, API_BASE)
-            log_msg = f"""{WEEK},{field},{data['person_id']},"{data['old']}","{data['new']}" """
-            update_logger.info(log_msg)
+                update_membership_data(data, API_BASE, parties,
+                                       coalitions_catalogue, update_logger)
 
 
 def send_additions(added):
