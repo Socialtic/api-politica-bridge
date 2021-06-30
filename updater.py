@@ -66,7 +66,7 @@ deletes_logger.addHandler(stream_handler)
 SHEET_ID = "1mk9LTI5RBYwrEPzILeDY925VJbLVmEoZyRzaa1gZ_hk"
 DATA_PATH = 'dataset'
 API_BASE = "http://localhost:5000/"
-PERSON_RANGE = "Todos!A1:AG3220"
+PERSON_RANGE = "Todos!A1:AG3225"
 COALITION_URL_RANGE = "URL_logo_partido_coal!A1:H37"
 PARTY_URL_RANGE = "URL_logo_partido_coal!I1:R62"
 RANGES = {
@@ -136,7 +136,8 @@ def send_changes(changed):
                 update_other_name_data(data, API_BASE)
             # profession_[2-6]
             elif re.search(profession_pattern, field):
-                update_profession_data(data, API_BASE)
+                update_profession_data(data, API_BASE, professions_catalogue,
+                                       update_logger)
             # Website, URL_FB_page, URL_FB_profile, URL_IG, URL_TW, URL_others,
             # URL_photo, source_of_truth
             elif re.search(url_pattern, field):

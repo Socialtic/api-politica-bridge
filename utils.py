@@ -697,9 +697,42 @@ def update_other_name_data(data, api_base):
     logger.info(log_msg)
 
 
-def update_profession_data(data, api_base):
+def update_profession_data(data, api_base, professions_catalogue, logger):
+    endpoint = "person-profession"
+    WEEK = get_update_week()
+    field = data["field"]
+    people_professions = read_csv(endpoint, path="csv_db/", as_dict=True)
+    # Profession removed
+    if not data["new"]:
+        person_profession_id = get_person_profession_id(data,
+                                                        people_professions,
+                                                        professions_catalogue)
+        r = requests.delete(f"{api_base}{endpoint}/{person_profession_id}",
+                           headers=HEADERS)
+    # It's a new profession
+    elif not data["old"]:
+        profession_id = professions_catalogue.index(data["new"].lower()) + 1
+        new_profession = {
+            "person_id": int(data["person_id"]),
+            "profession_id": profession_id
+        }
+        r = requests.post(f"{api_base}{endpoint}/", json=new_profession,
+                          headers=HEADERS)
+    # Profession changed
+    else:
+        person_profession_id = get_person_profession_id(data,
+                                                        people_professions,
+                                                        professions_catalogue)
+        new_profession = get_person_profession(person_profession_id,
+                                               people_professions)
+        new_profession_id = professions_catalogue.index(data["new"].lower()) + 1
+        new_profession["profession_id"] = new_profession_id
+        r = requests.put(f"{api_base}{endpoint}/{person_profession_id}",
+                         json=new_profession, headers=HEADERS)
+    log_msg = f"""{WEEK},{field},{r.request.method},{r.status_code},{data['person_id']},"{data['old']}","{data['new']}" """
+    logger.info(log_msg)
 
-    pass
+
 
 
 def update_url_data(data, api_base, urls, url_types, logger):
@@ -720,7 +753,7 @@ def update_url_data(data, api_base, urls, url_types, logger):
     WEEK = get_update_week()
     endpoint = 'url'
     field = data["field"]
-    # Information removed
+    # Urls removed
     if not data["new"]:
         print("NEW URL")
         url_ids = get_url_ids(urls, data["old"], int(data["person_id"]))
@@ -916,3 +949,21 @@ def get_update_week():
     zero_week_date = date(2021, 5, 3)
     current_week = date.today()
     return current_week.isocalendar()[1] - zero_week_date.isocalendar()[1] + 1
+
+
+def get_person_profession_id(data, people_professions, professions_catalogue):
+    for profession in people_professions:
+        is_same_person = profession["person_id"] == data["person_id"]
+        old_profession = professions_catalogue.index(data["old"].lower()) + 1
+        is_same_profession = old_profession == int(profession["profession_id"])
+        if is_same_person and is_same_profession:
+            return int(profession["person_profession_id"])
+    return -1
+
+
+def get_person_profession(person_profession_id, people_professions):
+    for profession in people_professions:
+        if int(profession["person_profession_id"]) == person_profession_id:
+            profession["person_id"] = int(profession["person_id"])
+            return profession
+    return {}
