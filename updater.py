@@ -66,7 +66,7 @@ deletes_logger.addHandler(stream_handler)
 SHEET_ID = "1mk9LTI5RBYwrEPzILeDY925VJbLVmEoZyRzaa1gZ_hk"
 DATA_PATH = 'dataset'
 API_BASE = "http://localhost:5000/"
-PERSON_RANGE = "Todos!A1:AG3225"
+PERSON_RANGE = "Todos!A1:AG3226"
 COALITION_URL_RANGE = "URL_logo_partido_coal!A1:H37"
 PARTY_URL_RANGE = "URL_logo_partido_coal!I1:R62"
 RANGES = {
@@ -133,7 +133,7 @@ def send_changes(changed):
                          "state", "area"]:
                 update_person_data(data, API_BASE, update_logger)
             elif field == "nickname":
-                update_other_name_data(data, API_BASE)
+                update_other_name_data(data, API_BASE, update_logger)
             # profession_[2-6]
             elif re.search(profession_pattern, field):
                 update_profession_data(data, API_BASE, professions_catalogue,
@@ -161,6 +161,8 @@ def send_additions(added):
     # OTHER-NAME (optional)
     other_names_data = make_other_names_struct(added)
     if other_names_data:
+        for other_name in other_names_data:
+            del other_name["other_name_id"]
         print("\t * SENDING OTHER-NAME DATA")
         send_data(API_BASE, 'other-name', other_names_data)
 
@@ -168,6 +170,8 @@ def send_additions(added):
     person_profession_data = make_person_profession(added,
                                                     professions_catalogue)
     if person_profession_data:
+        for person_profession in person_profession_data:
+            del person_profession["person_profession_id"]
         print("\t * SENDING PERSON-PROFESSION DATA")
         send_data(API_BASE, 'person-profession', person_profession_data)
 
@@ -181,12 +185,16 @@ def send_additions(added):
                          "date_changed_from_substitute"]
     membership_data = make_membership(added, parties, coalitions_catalogue,
                                       contest_chambers, membership_header)
+    for membership in membership_data:
+        del membership["membership_id"]
     print("\t * SENDING MEMBERSHIP DATA")
     send_data(API_BASE, 'membership', membership_data)
 
     # URL
-    url_data = make_url_struct(added, url_types)
+    url_data, _ = make_url_struct(added, url_types, -1)
     if url_data:
+        for url in url_data:
+            del url["url_id"]
         print("\t * SENDING URL DATA")
         send_data(API_BASE, 'url', url_data)
     lines = get_capture_lines(added)
