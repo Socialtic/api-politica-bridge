@@ -755,14 +755,12 @@ def update_url_data(data, api_base, urls, url_types, logger):
     field = data["field"]
     # Urls removed
     if not data["new"]:
-        print("NEW URL")
         url_ids = get_url_ids(urls, data["old"], int(data["person_id"]))
         for url_id in url_ids:
             r = requests.delete(f"{api_base}{endpoint}/{url_id}",
                                 headers=HEADERS)
     # It's a new url
     elif not data["old"]:
-        print("REMOVE URL")
         for new_url in data["new"].split(','):
             new_url = new_url.strip(" \n\r")
             url_data = {
@@ -777,10 +775,8 @@ def update_url_data(data, api_base, urls, url_types, logger):
                               headers=HEADERS)
     # Update a previous url
     else:
-        print("MULTI URL")
         # Update a single url
         if len(data["old"].split(",")) == 1 and len(data["new"].split(",")) == 1:
-            print("S UPDATE URL")
         # Update a single url
             r = False
             for url in urls:
@@ -796,9 +792,6 @@ def update_url_data(data, api_base, urls, url_types, logger):
                     }
                     r = requests.put(f"{api_base}{endpoint}/{url['id']}",
                                     json=new_url_data, headers=HEADERS)
-            if not r:
-                print()
-                breakpoint()
         # Update Multi URLs
         else:
             # Symmetric difference
@@ -808,14 +801,12 @@ def update_url_data(data, api_base, urls, url_types, logger):
             for url in diff_urls:
                 # delete URL
                 if url in old_urls:
-                    print("M REMOVE URL")
                     url_ids = get_url_ids(urls, url, int(data["person_id"]))
                     for url_id in url_ids:
                         r = requests.delete(f"{api_base}{endpoint}/{url_id}",
                                             headers=HEADERS)
                 # adding URL
                 else:
-                    print("M ADD URL")
                     url = url.strip(" \n\r")
                     url_data = {
                         "url": url,
@@ -827,11 +818,7 @@ def update_url_data(data, api_base, urls, url_types, logger):
                     }
                     r = requests.post(f"{api_base}{endpoint}/", json=url_data,
                                     headers=HEADERS)
-    try:
-        log_msg = f"""{WEEK},{field},{r.request.method},{r.status_code},{data['person_id']},"{data['old']}","{data['new']}" """
-    except UnboundLocalError:
-        print()
-        breakpoint()
+    log_msg = f"""{WEEK},{field},{r.request.method},{r.status_code},{data['person_id']},"{data['old']}","{data['new']}" """
     logger.info(log_msg)
 
 
