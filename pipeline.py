@@ -24,6 +24,13 @@ DB_TYPE = sys.argv[1]
 
 
 def main():
+    """**Entry function to the pipeline**
+
+    This script made three actions: Run verifications, preprocess
+    sheets data and sent these data to the API. 
+
+    :return: None
+    """
     make_banner("(1/3) VERIFICATIONS")
     # Getting sheet data as list of list
     dataset = sheet_reader(CAPTURE_SHEET_ID, READ_RANGE)

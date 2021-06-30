@@ -680,7 +680,16 @@ def update_person_data(data, api_base, logger):
     logger.info(log_msg)
 
 
-def update_other_name_data(data, api_base):
+def update_other_name_data(data, api_base, logger):
+    """**Update a single other-name data on the API**
+
+    :param data: Data with person id, changed field, old and new values
+    :type data: dict
+    :param api_base: Base of url API
+    :type api_base: str
+    :param logger: Logger object
+    :type logger: object
+    """
     # Week 1 = 3 May
     WEEK = get_update_week()
     endpoint = 'other-name'
@@ -698,6 +707,17 @@ def update_other_name_data(data, api_base):
 
 
 def update_profession_data(data, api_base, professions_catalogue, logger):
+    """**Update a single person-profession data on the API**
+
+    :param data: Data with person id, changed field, old and new values
+    :type data: dict
+    :param api_base: Base of url API
+    :type api_base: str
+    :param professions_catalogue: Catalogue of professions
+    :type: list
+    :param logger: Logger object
+    :type logger: object
+    """
     endpoint = "person-profession"
     WEEK = get_update_week()
     field = data["field"]
@@ -823,6 +843,19 @@ def update_url_data(data, api_base, urls, url_types, logger):
 
 
 def update_membership_data(data, api_base, parties, coalitions, logger):
+    """**Update a single membership data on the API**
+
+    :param data: Data with person id, changed field, old and new values
+    :type data: dict
+    :param api_base: Base of url API
+    :type api_base: str
+    :param parties: Catalogue of parties
+    :type parties: list
+    :param coalitions: Catalogue of coalitions
+    :type coalitions: list
+    :param logger: Logger object
+    :type logger: object
+    """
     bool_fields = ["goes_for_coalition", "goes_for_reelection",
                    "is_substitute", "changed_from_substitute"]
     int_field_pattern = r".*_id"
@@ -939,6 +972,20 @@ def get_update_week():
 
 
 def get_person_profession_id(data, people_professions, professions_catalogue):
+    """**Gets the person-profession id**
+
+    This function compare the person_id and the profession. If math returns
+    the person-profession-id record in the api
+
+    :param data: Data with person_id, old data en new data
+    :type data: dict
+    :param people_professions: List of person-profession records from the API
+    :type people_professions: list
+    :param professions_catalogue: Professions catalogue
+    :type professions_catalogue: list
+    :return: Person-profession id record from the API
+    :rtype: int
+    """
     for profession in people_professions:
         is_same_person = profession["person_id"] == data["person_id"]
         old_profession = professions_catalogue.index(data["old"].lower()) + 1
@@ -949,6 +996,15 @@ def get_person_profession_id(data, people_professions, professions_catalogue):
 
 
 def get_person_profession(person_profession_id, people_professions):
+    """**Gets person-profession record from the API by id**
+
+    :param person_profession_id: Person profession id record
+    :type person_profession_id: int
+    :param people_professions: List of person-profession records from the API
+    :type people_professions: list
+    :return: The person profession record corresponding with the id
+    :rtype: dict
+    """
     for profession in people_professions:
         if int(profession["person_profession_id"]) == person_profession_id:
             profession["person_id"] = int(profession["person_id"])

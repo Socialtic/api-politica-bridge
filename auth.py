@@ -11,5 +11,6 @@ SCOPES = [
     'https://www.googleapis.com/auth/spreadsheets',
 ]
 
+# To get credentials.json check Google Developers Documentacion (Links on README.md)
 credentials = service_account.Credentials.from_service_account_file('credentials.json', scopes=SCOPES)
 spreadsheet_service = build('sheets', 'v4', credentials=credentials)
