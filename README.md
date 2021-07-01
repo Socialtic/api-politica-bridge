@@ -115,22 +115,15 @@ and logged into `logs/` in three different types:
 2. Additions
 3. Deletions
 
-Due to the time constraints of the project this module ishas a status of Work
-in Progress (WIP).
+**NOTE**: Due to the time constraints of the project this module has a status
+of Work in Progress (WIP).
 
-#### Features
+#### TODO Feature
 
 * [ ] Replace automatically person_old.csv with person_current.csv information
   once the data update is complete.
-* [ ] Update changed data
-	* [X] URLs (Partially solved)
-	* [X] Person Data
-	* [X] Nicknames
-	* [ ] Professions
-	* [X] Membership data
-* [X] Update added data
-* [X] Update removed data
+* [ ] Test the script
 
-## TODO: Data examples
+## Data examples
 
-A few examples of how capture sheets looks like can be found at `data_samples/`. 
+An example of how capture sheets looks like can be found at `data_samples/` 
