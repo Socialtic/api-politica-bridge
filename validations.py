@@ -10,7 +10,8 @@ def last_name_check(lastname):
     :return: True is pass test, False otherwise
     :rtype: bool
     """
-    return True if len(lastname.split(' ')) >= 2 else False
+    # return True if len(lastname.split(' ')) >= 2 else False
+    return True if len(lastname) > 1 else False
 
 
 def membership_type_check(membership):
