@@ -10,9 +10,9 @@ from utils import (make_banner, verification_process,
                    make_other_names_struct, make_person_profession,
                    make_membership, make_url_struct, send_data)
 # ID sheets
-CAPTURE_SHEET_ID = "1mk9LTI5RBYwrEPzILeDY925VJbLVmEoZyRzaa1gZ_hk"
+CAPTURE_SHEET_ID = "1p7XMADrpEXRKzC3WKwlr3zcpyuJ_moCy04tkEyWEPYY"
 # Capture Read Ranges
-READ_RANGE = "Todos!A1:AG3225"
+READ_RANGE = "Todos!A1:AL1423"
 COALITION_URL_RANGE = "URL_logo_partido_coal!A1:H37"
 PARTY_URL_RANGE = "URL_logo_partido_coal!I1:R62"
 CSV_DB_PATH = 'csv_db'
@@ -62,7 +62,7 @@ def main():
     make_banner("(2/3) BUILD DYNAMIC DATA")
 
     # PERSON
-    person_header = ["person_id", "full_name", "first_name", "last_name",
+    person_header = ["person_id", "dni", "full_name", "first_name", "last_name",
                      "date_birth", "gender", "dead_or_alive",
                      "last_degree_of_studies", "contest_id"]
     # This list is ready to be send to the API
