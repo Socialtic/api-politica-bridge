@@ -31,10 +31,11 @@ class Catalogues:
     OTHER_NAMES_TYPES = ['', 'preferred', 'nickname', 'ballot_name']
     #   GOBERNADOR, DIPUTADO , PRESIDENTE MUNICIPAL
     ROLE_TYPES = ['', 'governmentOfficer', 'legislatorLowerBody',
-                  'executiveCouncil']
+                  'executiveCouncil', 'legislatorUpperBody']
     SPANISH_ROLES = {'governmentOfficer': "gubernatura",
                      "executiveCouncil": "presidencia",
-                     "legislatorLowerBody": "diputación"}
+                     "legislatorLowerBody": "diputación",
+                     "legislatorUpperBody": "senador"}
     URL_TYPES = {"Website": "WEBSITE_OFFICIAL",
                  "URL_FB_page": "FACEBOOK_CAMPAIGN",
                  "URL_FB_profile": "FACEBOOK_PERSONAL",
@@ -227,10 +228,24 @@ def get_contest_id(data, contest_chambers):
         location = data["area"].lower()
     # Diputación
     elif data["role_type"] == "legislatorLowerBody":
-        location = f"distrito federal {data['area']} de {data['state'].lower()}"
+        # location = f"distrito federal {data['area']} de {data['state'].lower()}"
+        location = f"diputado/a por {data['state'].lower()}"
+    # Senador
+    elif data["role_type"] == "legislatorUpperBody":
+        # location = data["state"].lower()
+        location = f"senador/a nacional por {data['state'].lower()}"
+
+    # print("role_type: " + str(data["role_type"]))
+    # print("location: " + str(location))
+    # print("contest_chamber: " + str(contest_chambers))
     for i, contest_chamber in enumerate(contest_chambers, start=1):
-        if location in contest_chamber and Catalogues.SPANISH_ROLES[data["role_type"]] in contest_chamber:
+        # if location in contest_chamber and Catalogues.SPANISH_ROLES[data["role_type"]] in contest_chamber:
+        if location in contest_chamber:
             return i
+
+    print("role_type: " + str(data["role_type"]))
+    print("location: " + str(location))
+    print("contest_chamber: " + str(contest_chambers))
     return -1
 
 
@@ -290,13 +305,13 @@ def make_other_names_struct(dataset):
     other_name_id = 0
     for i, data in enumerate(dataset, start=1):
         # TODO: check multinickname case
-        if data["nickname"]:
+        if data["ballot_name"]:
             other_name_id += 1
             result.append({
                 "other_name_id": other_name_id,
                 "is_deleted": data["is_deleted"],
-                "other_name_type": 2, # TODO
-                "name": data["nickname"],
+                "other_name_type": 3,
+                "name": data["ballot_name"],
                 "person_id": i
             })
     return result
@@ -354,21 +369,28 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header):
     """
     lines = []
     for i, data in enumerate(dataset, start=1):
-        if data["coalition"]:
-            coalition_id = coalitions.index(data["coalition"].lower().strip()) + 1
-        else:
-            coalition_id = -1
+        # if data["coalition"]:
+        #    coalition_id = coalitions.index(data["coalition"].lower().strip()) + 1
+        # else:
+        #    coalition_id = -1
+        coalition_id = -1
         contest_id = get_contest_id(data, contest_chambers)
+
+        if (contest_id < 0):
+            print("role_id: " + str(contest_id))
+            print("person_id: " + str(i))
+
         lines.append({
             "is_deleted": data["is_deleted"],
             "membership_id": i,
             "person_id": i,
             # TODO: By now contest_id == role_id. Change soon
             "role_id": contest_id,
-            "party_id": parties.index(data["abbreviation"].lower()) + 1,
+            "party_id": parties.index(data["partido"].lower()) + 1,
             "coalition_id": coalition_id,
             "contest_id": contest_id,
-            "goes_for_coalition": True if data["coalition"] else False,
+            #"goes_for_coalition": True if data["coalition"] else False,
+            "goes_for_coalition": False,
             "membership_type": Catalogues.MEMBERSHIP_TYPES.index(data["membership_type"]),
             "goes_for_reelection": False,  # Always false
             "start_date": data["start_date"], "end_date": data["end_date"],
