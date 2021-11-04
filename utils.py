@@ -542,6 +542,7 @@ def get_dummy_data(endpoint):
     """
     if endpoint == "person":
         dummy_data = {
+            "dni": '',
             "full_name": '',
             "first_name": '',
             "last_name": '',
