@@ -485,8 +485,8 @@ def make_url_struct(dataset, url_types, url_id_counter, coalitions=[],
                                 owner_id = get_owner_id(coalitions, data["Coalicion"],
                                                         "name")
                             else:
-                                owner_id = get_owner_id(parties, data["Abreviacion"],
-                                                        "abbreviation")
+                                owner_id = get_owner_id(parties, data["Partido"],
+                                                        "name")
                             url_id += 1
                             lines.append({
                                 "url_id": url_id,

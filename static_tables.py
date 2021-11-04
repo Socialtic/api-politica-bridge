@@ -7,7 +7,7 @@ CSV_DB_PATH = 'csv_db'
 # Struct read ranges
 ST_RANGES = {
     "area": "A1:H34", "chamber": "A1:C33", "role": "A1:F33",
-    "coalition": "A1:D7", "party": "A1:F96",
+    "coalition": "A1:D7", "party": "A1:F93",
     "profession": "A1:B88", "contest": "A1:G33"
     # "past-membership": "A1:G1",
     }

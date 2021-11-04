@@ -13,8 +13,8 @@ from utils import (make_banner, verification_process,
 CAPTURE_SHEET_ID = "1p7XMADrpEXRKzC3WKwlr3zcpyuJ_moCy04tkEyWEPYY"
 # Capture Read Ranges
 READ_RANGE = "Todos!A1:AL1423"
-COALITION_URL_RANGE = "URL_logo_partido_coal!A1:H37"
-PARTY_URL_RANGE = "URL_logo_partido_coal!I1:R62"
+COALITION_URL_RANGE = "URL_logo_partido_coal!A1:H1"
+PARTY_URL_RANGE = "URL_logo_partido_coal!I1:R93"
 CSV_DB_PATH = 'csv_db'
 API_BASE = 'http://localhost:5000/'
 # API endpoints
@@ -27,7 +27,7 @@ def main():
     """**Entry function to the pipeline**
 
     This script made three actions: Run verifications, preprocess
-    sheets data and sent these data to the API. 
+    sheets data and sent these data to the API.
 
     :return: None
     """
