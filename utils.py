@@ -235,17 +235,16 @@ def get_contest_id(data, contest_chambers):
         # location = data["state"].lower()
         location = f"senador/a nacional por {data['state'].lower()}"
 
-    # print("role_type: " + str(data["role_type"]))
-    # print("location: " + str(location))
-    # print("contest_chamber: " + str(contest_chambers))
     for i, contest_chamber in enumerate(contest_chambers, start=1):
         # if location in contest_chamber and Catalogues.SPANISH_ROLES[data["role_type"]] in contest_chamber:
         if location in contest_chamber:
             return i
 
+    print("person_id: " + str(data["person_id"]))
     print("role_type: " + str(data["role_type"]))
-    print("location: " + str(location))
-    print("contest_chamber: " + str(contest_chambers))
+    # print("role_type_es: " + str(Catalogues.SPANISH_ROLES[data["role_type"]]))
+    print("location: " + str(location) + "\n")
+    # print("contest_chamber: " + str(contest_chambers))
     return -1
 
 
