@@ -12,7 +12,7 @@ from utils import (make_banner, verification_process,
 # ID sheets
 CAPTURE_SHEET_ID = "1p7XMADrpEXRKzC3WKwlr3zcpyuJ_moCy04tkEyWEPYY"
 # Capture Read Ranges
-READ_RANGE = "Todos!A1:AL1423"
+READ_RANGE = "Todos!A1:AL1635"
 COALITION_URL_RANGE = "URL_logo_partido_coal!A1:H1"
 PARTY_URL_RANGE = "URL_logo_partido_coal!I1:R93"
 CSV_DB_PATH = 'csv_db'
