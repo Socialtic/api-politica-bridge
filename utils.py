@@ -18,30 +18,32 @@ class Catalogues:
     """**Common catalogues for table's construction**
     """
     DEGREES_OF_STUDIES = ['', 'ELEMENTARY', 'HIGH SCHOOL', 'ASSOCIATE DEGREE',
-                          'BACHELOR’S DEGREE',
+                          'BACHELOR´S DEGREE',
                           'UNIVERSITY 1ST PROFESSIONAL DEGREE',
                           'MASTER DEGREE', 'PHD DEGREE']
-    #   GOBERNADOR, DIPUTADO , PRESIDENTE MUNICIPAL
-    DISTRICT_TYPES = ['NATIONAL_EXEC', 'REGIONAL_EXEC', 'NATIONAL_LOWER',
-                      'LOCAL_EXEC']
+    #   PRESIDENTE NACIONAL, GOBERNADOR, DIPUTADO , PRESIDENTE MUNICIPAL, SENADOR NACIONAL, DIPUTACIONES LOCALES
+    DISTRICT_TYPES = ['NATIONAL_EXEC', 'REGIONAL_EXEC', 'NATIONAL_LOWER', 'LOCAL_EXEC', 'NATIONAL_UPPER',
+                      'REGIONAL_LEGISLATIVE']
     GENDERS = ['', 'M', 'F']
     MEMBERSHIP_TYPES = ['', 'officeholder', 'campaigning_politician',
-                        'party_leader']
+                        'party_leader', 'officeholder_substitute']
     # privilegiado, apodo, nombre de la boleta
     OTHER_NAMES_TYPES = ['', 'preferred', 'nickname', 'ballot_name']
-    #   GOBERNADOR, DIPUTADO , PRESIDENTE MUNICIPAL
-    ROLE_TYPES = ['', 'governmentOfficer', 'legislatorLowerBody',
-                  'executiveCouncil']
+    #   GOBERNADOR, DIPUTADO , PRESIDENTE MUNICIPAL, SENADOR NACIONAL, DIPUADO LOCAL
+    ROLE_TYPES = ['', 'governmentOfficer', 'legislatorLowerBody', 'executiveCouncil', 'legislatorUpperBody',
+                  'regionalLegislator']
     SPANISH_ROLES = {'governmentOfficer': "gubernatura",
                      "executiveCouncil": "presidencia",
-                     "legislatorLowerBody": "diputación"}
+                     "legislatorLowerBody": "diputación del distrito federal",
+                     "legislatorUpperBody": "senaduría",
+                     "regionalLegislator": "diputación del distrito local"}
     URL_TYPES = {"Website": "WEBSITE_OFFICIAL",
                  "URL_FB_page": "FACEBOOK_CAMPAIGN",
                  "URL_FB_profile": "FACEBOOK_PERSONAL",
                  "URL_IG": "INSTAGRAM_CAMPAIGN", "URL_TW": "TWITTER",
                  "URL_photo": "PHOTO", "source_of_truth": "SOURCE_OF_TRUTH",
                  "URL_logo": "LOGO"}
-    URL_OWNER_TYPES = ["", "PERSON", "PARTY", "COALITION", "MEMBSERHIP"]
+    URL_OWNER_TYPES = ["", "PERSON", "PARTY", "COALITION", "MEMBERSHIP"]
 
 
 def make_banner(title):
@@ -222,15 +224,33 @@ def get_contest_id(data, contest_chambers):
     # Gubernaturas
     if data["role_type"] == "governmentOfficer":
         location = data["state"].lower()
+        #print("gubernatura: " + Catalogues.SPANISH_ROLES[data["role_type"]])
     # Alcaldías (presidencia)
     elif data["role_type"] == "executiveCouncil":
         location = data["area"].lower()
+        #print("alcaldia: " + Catalogues.SPANISH_ROLES[data["role_type"]])
     # Diputación
     elif data["role_type"] == "legislatorLowerBody":
         location = f"distrito federal {data['area']} de {data['state'].lower()}"
+        #print("diputacion: " + Catalogues.SPANISH_ROLES[data["role_type"]])
+    # Senaduria
+    elif data["role_type"] == "legislatorUpperBody":
+        location = f"senaduría de {data['state'].lower()}"
+        #print("senaduria: " + Catalogues.SPANISH_ROLES[data["role_type"]])
+    # Diputación local
+    elif data["role_type"] == "regionalLegislator":
+        location = f"distrito local {data['area']} {data['state'].lower()}"
+        #print("diputacion local: " + Catalogues.SPANISH_ROLES[data["role_type"]])
     for i, contest_chamber in enumerate(contest_chambers, start=1):
-        if location in contest_chamber and Catalogues.SPANISH_ROLES[data["role_type"]] in contest_chamber:
+        #if location in contest_chamber and Catalogues.SPANISH_ROLES[data["role_type"]] in contest_chamber:
+        if location in contest_chamber:
             return i
+
+    print("person_id: " + str(data["person_id"]))
+    print("role_type: " + str(data["role_type"]))
+    #print("role_type_es: " + str(Catalogues.SPANISH_ROLES[data["role_type"]]))
+    print("location: " + str(location) + "\n")
+    #print("contest_chamber: " + str(contest_chambers))
     return -1
 
 
