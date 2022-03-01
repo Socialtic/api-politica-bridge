@@ -22,16 +22,14 @@ class Catalogues:
                           'UNIVERSITY 1ST PROFESSIONAL DEGREE',
                           'MASTER DEGREE', 'PHD DEGREE']
     #   GOBERNADOR, DIPUTADO , PRESIDENTE MUNICIPAL
-    DISTRICT_TYPES = ['NATIONAL_EXEC', 'REGIONAL_EXEC', 'NATIONAL_LOWER',
-                      'LOCAL_EXEC']
+    DISTRICT_TYPES = ['NATIONAL_EXEC', 'REGIONAL_EXEC', 'NATIONAL_LOWER', 'LOCAL_EXEC', 'NATIONAL_UPPER', 'REGIONAL_LEGISLATIVE']
     GENDERS = ['', 'M', 'F']
     MEMBERSHIP_TYPES = ['', 'officeholder', 'campaigning_politician',
                         'party_leader']
     # privilegiado, apodo, nombre de la boleta
     OTHER_NAMES_TYPES = ['', 'preferred', 'nickname', 'ballot_name']
     #   GOBERNADOR, DIPUTADO , PRESIDENTE MUNICIPAL
-    ROLE_TYPES = ['', 'governmentOfficer', 'legislatorLowerBody',
-                  'executiveCouncil', 'legislatorUpperBody']
+    ROLE_TYPES = ['', 'governmentOfficer', 'legislatorLowerBody', 'executiveCouncil', 'legislatorUpperBody', 'regionalLegislator', 'headOfState', 'deputyHeadOfGovernment']
     SPANISH_ROLES = {'governmentOfficer': "gubernatura",
                      "executiveCouncil": "presidencia",
                      "legislatorLowerBody": "diputación",
@@ -220,20 +218,37 @@ def get_contest_id(data, contest_chambers):
     :return: The contest id if any, else
     :rtype: int
     """
-    # Gubernaturas
-    if data["role_type"] == "governmentOfficer":
+
+    # Presidencia (6)
+    if data["role_type"] == "headOfState":
+        location = data["presidencia de colombia"].lower()
+    # VicePresidencia (7)
+    elif data["role_type"] == "headOfState":
+        location = data["vicepresidencia de colombia"].lower()
+    # Gubernaturas (1)
+    elif data["role_type"] == "governmentOfficer":
         location = data["state"].lower()
-    # Alcaldías (presidencia)
+    # Alcaldías (presidencia) (3)
     elif data["role_type"] == "executiveCouncil":
         location = data["area"].lower()
-    # Diputación
+    # Diputación (2)
     elif data["role_type"] == "legislatorLowerBody":
         # location = f"distrito federal {data['area']} de {data['state'].lower()}"
-        location = f"diputado/a por {data['state'].lower()}"
-    # Senador
+        #location = f"diputado/a por {data['state'].lower()}"
+        if data['state'].lower() == "bogotá":
+            location = f"representante a la cámara por bogotá"
+        else:
+            location = f"representante a la cámara por el departamento de {data['state'].lower()}"
+
+    # Senador (4)
     elif data["role_type"] == "legislatorUpperBody":
         # location = data["state"].lower()
-        location = f"senador/a nacional por {data['state'].lower()}"
+        if data['state'].lower() == "colombia":
+            location = f"senador de la república de colombia"
+        else:
+            location = f"senador de la república {data['state'].lower()}"
+
+    location = data['contest'].lower()
 
     for i, contest_chamber in enumerate(contest_chambers, start=1):
         # if location in contest_chamber and Catalogues.SPANISH_ROLES[data["role_type"]] in contest_chamber:
@@ -304,13 +319,13 @@ def make_other_names_struct(dataset):
     other_name_id = 0
     for i, data in enumerate(dataset, start=1):
         # TODO: check multinickname case
-        if data["ballot_name"]:
+        if data["nickname"]:
             other_name_id += 1
             result.append({
                 "other_name_id": other_name_id,
                 "is_deleted": data["is_deleted"],
                 "other_name_type": 3,
-                "name": data["ballot_name"],
+                "name": data["nickname"],
                 "person_id": i
             })
     return result
@@ -368,11 +383,17 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header):
     """
     lines = []
     for i, data in enumerate(dataset, start=1):
-        # if data["coalition"]:
-        #    coalition_id = coalitions.index(data["coalition"].lower().strip()) + 1
-        # else:
-        #    coalition_id = -1
-        coalition_id = -1
+        if data["coalition"]:
+            coalition_id = coalitions.index(data["coalition"].lower().strip()) + 1
+        else:
+            coalition_id = -1
+
+        if data["party"]:
+            party_id = parties.index(data["party"].lower()) + 1
+        else:
+            party_id = -1
+            print("person_id:" + str(i) + " no party")
+
         contest_id = get_contest_id(data, contest_chambers)
 
         if (contest_id < 0):
@@ -385,11 +406,10 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header):
             "person_id": i,
             # TODO: By now contest_id == role_id. Change soon
             "role_id": contest_id,
-            "party_id": parties.index(data["partido"].lower()) + 1,
+            "party_id": party_id,
             "coalition_id": coalition_id,
             "contest_id": contest_id,
-            #"goes_for_coalition": True if data["coalition"] else False,
-            "goes_for_coalition": False,
+            "goes_for_coalition": True if data["coalition"] else False,
             "membership_type": Catalogues.MEMBERSHIP_TYPES.index(data["membership_type"]),
             "goes_for_reelection": False,  # Always false
             "start_date": data["start_date"], "end_date": data["end_date"],
@@ -586,6 +606,46 @@ def get_dummy_data(endpoint):
             "url_type": -1,
             "owner_type": -1,
             "owner_id": -1
+        }
+    elif endpoint == "area":
+        dummy_data = {
+            "ocd_id": "",
+            "name": "",
+            "country": "",
+            "state": "",
+            "city": "",
+            "district_type": -1,
+            "parent_area_id": -1,
+        }
+    elif endpoint == "role":
+        dummy_data = {
+            "title": "",
+            "role": -1,
+            "area_id": -1,
+            "chamber_id": -1,
+            "contest_id": -1,
+        }
+    elif endpoint == "party":
+        dummy_data = {
+            "name": "",
+            "abbreviation": "",
+            "area_id": -1,
+            "colors": [],
+            "coalition_id": -1,
+        }
+    elif endpoint == "contest":
+        dummy_data = {
+            "area_id": -1,
+            "title": "",
+            "membership_id_winner": -1,
+            "start_date": "0001-01-01",
+            "end_date": "0001-01-01",
+            "election_identifier": ""
+        }
+    elif endpoint == "chamber":
+        dummy_data = {
+            "area_id": -1,
+            "name": ""
         }
     return dummy_data
 
@@ -897,7 +957,7 @@ def update_membership_data(data, api_base, parties, coalitions, logger):
             new_membership[key] = True if value == "True" else False
     if field == "membership_type":
         new_membership[field] = Catalogues.MEMBERSHIP_TYPES.index(data["new"])
-    elif field == "abbreviation":
+    elif field == "party":
         new_membership["party_id"] = parties.index(data["new"].lower()) + 1
     elif field == "coalition":
         if data["new"]:
@@ -948,7 +1008,7 @@ def get_capture_lines(dataset):
         line += people["last_name"] + ','
         line += people["full_name"] + ','
         line += people["nickname"] + ','
-        line += people["abbreviation"] + ','
+        line += people["party"] + ','
         line += people["coalition"] + ','
         line += people["state"] + ','
         line += people["area"] + ','
