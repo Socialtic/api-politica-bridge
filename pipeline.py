@@ -10,11 +10,11 @@ from utils import (make_banner, verification_process,
                    make_other_names_struct, make_person_profession,
                    make_membership, make_url_struct, send_data)
 # ID sheets
-CAPTURE_SHEET_ID = "1p7XMADrpEXRKzC3WKwlr3zcpyuJ_moCy04tkEyWEPYY"
+CAPTURE_SHEET_ID = "1ty6nlyEb88RrLZHRziITZP6FkajQKMq-JlRgc-jEr78"
 # Capture Read Ranges
-READ_RANGE = "Todos!A1:AL1635"
-COALITION_URL_RANGE = "URL_logo_partido_coal!A1:H1"
-PARTY_URL_RANGE = "URL_logo_partido_coal!I1:R93"
+READ_RANGE = "Todos!A1:AL1880"
+COALITION_URL_RANGE = "URL_logo_partido_coal!A1:H26"
+PARTY_URL_RANGE = "URL_logo_partido_coal!J1:S135"
 CSV_DB_PATH = 'csv_db'
 API_BASE = 'http://localhost:5000/'
 # API endpoints
