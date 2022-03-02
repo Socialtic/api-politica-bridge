@@ -219,10 +219,8 @@ def get_contest_id(data, contest_chambers):
     :rtype: int
     """
 
-    if data['contest']:
-        location = data['contest'].lower()
     # Presidencia (6)
-    elif data["role_type"] == "headOfState":
+    if data["role_type"] == "headOfState":
         location = data["presidencia de colombia"].lower()
     # VicePresidencia (7)
     elif data["role_type"] == "headOfState":
@@ -248,6 +246,8 @@ def get_contest_id(data, contest_chambers):
             location = f"senador de la república de colombia"
         else:
             location = f"senador de la república {data['state'].lower()}"
+
+    location = data['contest'].lower()
 
     for i, contest_chamber in enumerate(contest_chambers, start=1):
         # if location in contest_chamber and Catalogues.SPANISH_ROLES[data["role_type"]] in contest_chamber:
