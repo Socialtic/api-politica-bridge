@@ -1,0 +1,1 @@
+[{"ocd_id": "ocd-division/country:mx/state:ja/city:8", "name": "Presidencia del municipio de TLAQUEPAQUE", "country": "MX", "state": "JAL", "city": "TLAQUEPAQUE", "district_type": "3", "parent_area_id": "-1", "is_deleted": true}]

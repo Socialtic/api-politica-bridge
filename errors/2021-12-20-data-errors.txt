@@ -1,0 +1,483 @@
+En documento CAPTURA, cambiar el valor de Bachelor’s Degree por BACHELOR’S DEGREE, la comilla es distinta
+Igual pueden copiar el texto de aqui https://github.com/Socialtic/api-politica/blob/fcf2a3d400b0731738e22e71ae690244b004b4d8/app/const.py#L52
+Si se fijan la comilla es distinta a la comilla simple, esto es porque en el código causa conflicto.
+
+Todas las siguientes personas no estan siendo enlazadas a su area, pueden ser cualquiera de los siguientes casos:
+1) En el documento ESTRUCTURA no se creo bien el area, e.g las abreviaciones de lso estados estan mal
+2) Los datos entre las areas de ESTRUCTURA y los filtros de CAPTURA son distintos
+e.g. en estructura esta MICHOACÁN y en captura esta "Michoacán de Ocampo", son datos distintos
+e.g. en estructura esta MÉXICO y en captura esta "Estado de México", son datos distintos
+3) Los datos de abreviaciones de estados o asignados en captura a la persona no coinciden con lo de estructura o con los filtros
+
+person_id: 3235
+role_type: executiveCouncil
+location: ciudad juárez
+
+person_id: 3256
+role_type: governmentOfficer
+location: aguascalientes
+
+person_id: 3257
+role_type: governmentOfficer
+location: coahuila de zaragoza
+
+person_id: 3258
+role_type: governmentOfficer
+location: chiapas
+
+person_id: 3259
+role_type: governmentOfficer
+location: ciudad de méxico
+
+person_id: 3260
+role_type: governmentOfficer
+location: durango
+
+person_id: 3261
+role_type: governmentOfficer
+location: guanajuato
+
+person_id: 3262
+role_type: governmentOfficer
+location: hidalgo
+
+person_id: 3263
+role_type: governmentOfficer
+location: jalisco
+
+person_id: 3264
+role_type: governmentOfficer
+location: estado de méxico
+
+person_id: 3265
+role_type: governmentOfficer
+location: morelos
+
+person_id: 3266
+role_type: governmentOfficer
+location: oaxaca
+
+person_id: 3267
+role_type: governmentOfficer
+location: puebla
+
+person_id: 3268
+role_type: governmentOfficer
+location: quintana roo
+
+person_id: 3269
+role_type: governmentOfficer
+location: tabasco
+
+person_id: 3270
+role_type: governmentOfficer
+location: tabasco
+
+person_id: 3271
+role_type: governmentOfficer
+location: tamaulipas
+
+person_id: 3272
+role_type: governmentOfficer
+location: veracruz de ignacio de la llave
+
+person_id: 3273
+role_type: governmentOfficer
+location: yucatán
+
+person_id: 3294
+role_type: legislatorUpperBody
+location: senaduría de coahuila de zaragoza
+
+person_id: 3295
+role_type: legislatorUpperBody
+location: senaduría de coahuila de zaragoza
+
+person_id: 3300
+role_type: legislatorUpperBody
+location: senaduría de estado de méxico
+
+person_id: 3301
+role_type: legislatorUpperBody
+location: senaduría de estado de méxico
+
+person_id: 3302
+role_type: legislatorUpperBody
+location: senaduría de estado de méxico
+
+person_id: 3312
+role_type: legislatorUpperBody
+location: senaduría de michoacán de ocampo
+
+person_id: 3313
+role_type: legislatorUpperBody
+location: senaduría de michoacán de ocampo
+
+person_id: 3350
+role_type: legislatorUpperBody
+location: senaduría de veracruz de ignacio de la llave
+
+person_id: 3351
+role_type: legislatorUpperBody
+location: senaduría de veracruz de ignacio de la llave
+
+person_id: 3352
+role_type: legislatorUpperBody
+location: senaduría de veracruz de ignacio de la llave
+
+person_id: 3353
+role_type: legislatorUpperBody
+location: senaduría de veracruz de ignacio de la llave
+
+person_id: 3362
+role_type: legislatorUpperBody
+location: senaduría de coahuila de zaragoza
+
+person_id: 3409
+role_type: regionalLegislator
+location: distrito local 1 coahuila de zaragoza
+
+person_id: 3410
+role_type: regionalLegislator
+location: distrito local 2 coahuila de zaragoza
+
+person_id: 3411
+role_type: regionalLegislator
+location: distrito local 3 coahuila de zaragoza
+
+person_id: 3412
+role_type: regionalLegislator
+location: distrito local 4 coahuila de zaragoza
+
+person_id: 3413
+role_type: regionalLegislator
+location: distrito local 5 coahuila de zaragoza
+
+person_id: 3414
+role_type: regionalLegislator
+location: distrito local 6 coahuila de zaragoza
+
+person_id: 3415
+role_type: regionalLegislator
+location: distrito local 7 coahuila de zaragoza
+
+person_id: 3416
+role_type: regionalLegislator
+location: distrito local 8 coahuila de zaragoza
+
+person_id: 3417
+role_type: regionalLegislator
+location: distrito local 9 coahuila de zaragoza
+
+person_id: 3418
+role_type: regionalLegislator
+location: distrito local 10 coahuila de zaragoza
+
+person_id: 3419
+role_type: regionalLegislator
+location: distrito local 10 coahuila de zaragoza
+
+person_id: 3420
+role_type: regionalLegislator
+location: distrito local 11 coahuila de zaragoza
+
+person_id: 3421
+role_type: regionalLegislator
+location: distrito local 12 coahuila de zaragoza
+
+person_id: 3422
+role_type: regionalLegislator
+location: distrito local 13 coahuila de zaragoza
+
+person_id: 3423
+role_type: regionalLegislator
+location: distrito local 14 coahuila de zaragoza
+
+person_id: 3424
+role_type: regionalLegislator
+location: distrito local 15 coahuila de zaragoza
+
+person_id: 3425
+role_type: regionalLegislator
+location: distrito local 16 coahuila de zaragoza
+
+person_id: 3507
+role_type: regionalLegislator
+location: distrito local 1 estado de méxico
+
+person_id: 3508
+role_type: regionalLegislator
+location: distrito local 2 estado de méxico
+
+person_id: 3509
+role_type: regionalLegislator
+location: distrito local 3 estado de méxico
+
+person_id: 3510
+role_type: regionalLegislator
+location: distrito local 4 estado de méxico
+
+person_id: 3511
+role_type: regionalLegislator
+location: distrito local 5 estado de méxico
+
+person_id: 3512
+role_type: regionalLegislator
+location: distrito local 6 estado de méxico
+
+person_id: 3513
+role_type: regionalLegislator
+location: distrito local 7 estado de méxico
+
+person_id: 3514
+role_type: regionalLegislator
+location: distrito local 8 estado de méxico
+
+person_id: 3515
+role_type: regionalLegislator
+location: distrito local 9 estado de méxico
+
+person_id: 3516
+role_type: regionalLegislator
+location: distrito local 10 estado de méxico
+
+person_id: 3517
+role_type: regionalLegislator
+location: distrito local 11 estado de méxico
+
+person_id: 3518
+role_type: regionalLegislator
+location: distrito local 12 estado de méxico
+
+person_id: 3519
+role_type: regionalLegislator
+location: distrito local 13 estado de méxico
+
+person_id: 3520
+role_type: regionalLegislator
+location: distrito local 14 estado de méxico
+
+person_id: 3521
+role_type: regionalLegislator
+location: distrito local 15 estado de méxico
+
+person_id: 3522
+role_type: regionalLegislator
+location: distrito local 16 estado de méxico
+
+person_id: 3523
+role_type: regionalLegislator
+location: distrito local 17 estado de méxico
+
+person_id: 3524
+role_type: regionalLegislator
+location: distrito local 17 estado de méxico
+
+person_id: 3525
+role_type: regionalLegislator
+location: distrito local 18 estado de méxico
+
+person_id: 3526
+role_type: regionalLegislator
+location: distrito local 19 estado de méxico
+
+person_id: 3527
+role_type: regionalLegislator
+location: distrito local 20 estado de méxico
+
+person_id: 3528
+role_type: regionalLegislator
+location: distrito local 21 estado de méxico
+
+person_id: 3529
+role_type: regionalLegislator
+location: distrito local 22 estado de méxico
+
+person_id: 3530
+role_type: regionalLegislator
+location: distrito local 23 estado de méxico
+
+person_id: 3531
+role_type: regionalLegislator
+location: distrito local 24 estado de méxico
+
+person_id: 3532
+role_type: regionalLegislator
+location: distrito local 25 estado de méxico
+
+person_id: 3533
+role_type: regionalLegislator
+location: distrito local 26 estado de méxico
+
+person_id: 3534
+role_type: regionalLegislator
+location: distrito local 27 estado de méxico
+
+person_id: 3535
+role_type: regionalLegislator
+location: distrito local 28 estado de méxico
+
+person_id: 3536
+role_type: regionalLegislator
+location: distrito local 29 estado de méxico
+
+person_id: 3537
+role_type: regionalLegislator
+location: distrito local 30 estado de méxico
+
+person_id: 3538
+role_type: regionalLegislator
+location: distrito local 31 estado de méxico
+
+person_id: 3539
+role_type: regionalLegislator
+location: distrito local 32 estado de méxico
+
+person_id: 3540
+role_type: regionalLegislator
+location: distrito local 33 estado de méxico
+
+person_id: 3541
+role_type: regionalLegislator
+location: distrito local 34 estado de méxico
+
+person_id: 3542
+role_type: regionalLegislator
+location: distrito local 35 estado de méxico
+
+person_id: 3543
+role_type: regionalLegislator
+location: distrito local 36 estado de méxico
+
+person_id: 3544
+role_type: regionalLegislator
+location: distrito local 37 estado de méxico
+
+person_id: 3545
+role_type: regionalLegislator
+location: distrito local 38 estado de méxico
+
+person_id: 3546
+role_type: regionalLegislator
+location: distrito local 39 estado de méxico
+
+person_id: 3547
+role_type: regionalLegislator
+location: distrito local 40 estado de méxico
+
+person_id: 3548
+role_type: regionalLegislator
+location: distrito local 41 estado de méxico
+
+person_id: 3549
+role_type: regionalLegislator
+location: distrito local 42 estado de méxico
+
+person_id: 3550
+role_type: regionalLegislator
+location: distrito local 43 estado de méxico
+
+person_id: 3551
+role_type: regionalLegislator
+location: distrito local 44 estado de méxico
+
+person_id: 3552
+role_type: regionalLegislator
+location: distrito local 45 estado de méxico
+
+person_id: 3553
+role_type: regionalLegislator
+location: distrito local 1 michoacán de ocampo
+
+person_id: 3554
+role_type: regionalLegislator
+location: distrito local 2 michoacán de ocampo
+
+person_id: 3555
+role_type: regionalLegislator
+location: distrito local 3 michoacán de ocampo
+
+person_id: 3556
+role_type: regionalLegislator
+location: distrito local 4 michoacán de ocampo
+
+person_id: 3557
+role_type: regionalLegislator
+location: distrito local 5 michoacán de ocampo
+
+person_id: 3558
+role_type: regionalLegislator
+location: distrito local 6 michoacán de ocampo
+
+person_id: 3559
+role_type: regionalLegislator
+location: distrito local 7 michoacán de ocampo
+
+person_id: 3560
+role_type: regionalLegislator
+location: distrito local 8 michoacán de ocampo
+
+person_id: 3561
+role_type: regionalLegislator
+location: distrito local 9 michoacán de ocampo
+
+person_id: 3562
+role_type: regionalLegislator
+location: distrito local 10 michoacán de ocampo
+
+person_id: 3563
+role_type: regionalLegislator
+location: distrito local 11 michoacán de ocampo
+
+person_id: 3564
+role_type: regionalLegislator
+location: distrito local 12 michoacán de ocampo
+
+person_id: 3565
+role_type: regionalLegislator
+location: distrito local 13 michoacán de ocampo
+
+person_id: 3566
+role_type: regionalLegislator
+location: distrito local 14 michoacán de ocampo
+
+person_id: 3567
+role_type: regionalLegislator
+location: distrito local 15 michoacán de ocampo
+
+person_id: 3568
+role_type: regionalLegislator
+location: distrito local 16 michoacán de ocampo
+
+person_id: 3569
+role_type: regionalLegislator
+location: distrito local 17 michoacán de ocampo
+
+person_id: 3570
+role_type: regionalLegislator
+location: distrito local 18 michoacán de ocampo
+
+person_id: 3571
+role_type: regionalLegislator
+location: distrito local 19 michoacán de ocampo
+
+person_id: 3572
+role_type: regionalLegislator
+location: distrito local 20 michoacán de ocampo
+
+person_id: 3573
+role_type: regionalLegislator
+location: distrito local 21 michoacán de ocampo
+
+person_id: 3574
+role_type: regionalLegislator
+location: distrito local 22 michoacán de ocampo
+
+person_id: 3575
+role_type: regionalLegislator
+location: distrito local 23 michoacán de ocampo
+
+person_id: 3576
+role_type: regionalLegislator
+location: distrito local 24 michoacán de ocampo
+

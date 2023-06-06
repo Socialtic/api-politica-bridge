@@ -1,0 +1,154 @@
+Coalición: por aguascalientes
+
+person_id: 3235
+role_type: executiveCouncil
+location: ciudad juárez
+
+person_id: 3256
+role_type: governmentOfficer
+location: aguascalientes
+
+person_id: 3257
+role_type: governmentOfficer
+location: coahuila de zaragoza
+
+person_id: 3258
+role_type: governmentOfficer
+location: chiapas
+
+person_id: 3259
+role_type: governmentOfficer
+location: ciudad de méxico
+
+person_id: 3260
+role_type: governmentOfficer
+location: durango
+
+person_id: 3261
+role_type: governmentOfficer
+location: guanajuato
+
+person_id: 3262
+role_type: governmentOfficer
+location: hidalgo
+
+person_id: 3263
+role_type: governmentOfficer
+location: jalisco
+
+person_id: 3264
+role_type: governmentOfficer
+location: estado de méxico
+
+person_id: 3265
+role_type: governmentOfficer
+location: morelos
+
+person_id: 3266
+role_type: governmentOfficer
+location: oaxaca
+
+person_id: 3267
+role_type: governmentOfficer
+location: puebla
+
+person_id: 3268
+role_type: governmentOfficer
+location: quintana roo
+
+person_id: 3269
+role_type: governmentOfficer
+location: tabasco
+
+person_id: 3270
+role_type: governmentOfficer
+location: tabasco
+
+person_id: 3271
+role_type: governmentOfficer
+location: tamaulipas
+
+person_id: 3272
+role_type: governmentOfficer
+location: veracruz de ignacio de la llave
+
+person_id: 3273
+role_type: governmentOfficer
+location: yucatán
+
+person_id: 3235
+role_type: executiveCouncil
+location: ciudad juárez
+
+person_id: 3256
+role_type: governmentOfficer
+location: aguascalientes
+
+person_id: 3257
+role_type: governmentOfficer
+location: coahuila de zaragoza
+
+person_id: 3258
+role_type: governmentOfficer
+location: chiapas
+
+person_id: 3259
+role_type: governmentOfficer
+location: ciudad de méxico
+
+person_id: 3260
+role_type: governmentOfficer
+location: durango
+
+person_id: 3261
+role_type: governmentOfficer
+location: guanajuato
+
+person_id: 3262
+role_type: governmentOfficer
+location: hidalgo
+
+person_id: 3263
+role_type: governmentOfficer
+location: jalisco
+
+person_id: 3264
+role_type: governmentOfficer
+location: estado de méxico
+
+person_id: 3265
+role_type: governmentOfficer
+location: morelos
+
+person_id: 3266
+role_type: governmentOfficer
+location: oaxaca
+
+person_id: 3267
+role_type: governmentOfficer
+location: puebla
+
+person_id: 3268
+role_type: governmentOfficer
+location: quintana roo
+
+person_id: 3269
+role_type: governmentOfficer
+location: tabasco
+
+person_id: 3270
+role_type: governmentOfficer
+location: tabasco
+
+person_id: 3271
+role_type: governmentOfficer
+location: tamaulipas
+
+person_id: 3272
+role_type: governmentOfficer
+location: veracruz de ignacio de la llave
+
+person_id: 3273
+role_type: governmentOfficer
+location: yucatán
+

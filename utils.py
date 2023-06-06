@@ -221,6 +221,7 @@ def get_contest_id(data, contest_chambers):
     :return: The contest id if any, else
     :rtype: int
     """
+
     # Gubernaturas
     if data["role_type"] == "governmentOfficer":
         location = data["state"].lower()
@@ -241,6 +242,8 @@ def get_contest_id(data, contest_chambers):
     elif data["role_type"] == "regionalLegislator":
         location = f"distrito local {data['area']} {data['state'].lower()}"
         #print("diputacion local: " + Catalogues.SPANISH_ROLES[data["role_type"]])
+
+    location = data['contest'].lower()
     for i, contest_chamber in enumerate(contest_chambers, start=1):
         #if location in contest_chamber and Catalogues.SPANISH_ROLES[data["role_type"]] in contest_chamber:
         if location in contest_chamber:
@@ -253,6 +256,20 @@ def get_contest_id(data, contest_chambers):
     #print("contest_chamber: " + str(contest_chambers))
     return -1
 
+def get_role_id(roles, contest_id):
+    """**Gets the role id **
+
+    :return: The role id if any, else
+    :rtype: int
+    """
+
+    for i, role in enumerate(roles, start=1):
+        if int(role["contest_id"]) == int(contest_id):
+            #print("Role SI " + role["contest_id"] + " vs " + str(contest_id) + ": " + str(i))
+            return i
+
+    print("Role NO " + role["contest_id"] + " vs " + str(contest_id))
+    return -1
 
 def make_person_struct(dataset, contest_chambers, header):
     """**Function that makes person data**
@@ -354,7 +371,7 @@ def make_person_profession(dataset, professions):
     return lines
 
 
-def make_membership(dataset, parties, coalitions, contest_chambers, header):
+def make_membership(dataset, parties, coalitions, contest_chambers, header, roles):
     """**Makes membership data**
 
     This functions makes a valid list of membership data for the API
@@ -379,12 +396,13 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header):
         else:
             coalition_id = -1
         contest_id = get_contest_id(data, contest_chambers)
+        role_id = get_role_id(roles, contest_id)
         lines.append({
             "is_deleted": data["is_deleted"],
             "membership_id": i,
             "person_id": i,
             # TODO: By now contest_id == role_id. Change soon
-            "role_id": contest_id,
+            "role_id": role_id,
             "party_id": parties.index(data["abbreviation"].lower()) + 1,
             "coalition_id": coalition_id,
             "contest_id": contest_id,
@@ -584,6 +602,46 @@ def get_dummy_data(endpoint):
             "url_type": -1,
             "owner_type": -1,
             "owner_id": -1
+        }
+    elif endpoint == "area":
+        dummy_data = {
+            "ocd_id": "",
+            "name": "",
+            "country": "",
+            "state": "",
+            "city": "",
+            "district_type": -1,
+            "parent_area_id": -1,
+        }
+    elif endpoint == "role":
+        dummy_data = {
+            "title": "",
+            "role": -1,
+            "area_id": -1,
+            "chamber_id": -1,
+            "contest_id": -1,
+        }
+    elif endpoint == "party":
+        dummy_data = {
+            "name": "",
+            "abbreviation": "",
+            "area_id": -1,
+            "colors": [],
+            "coalition_id": -1,
+        }
+    elif endpoint == "contest":
+        dummy_data = {
+            "area_id": -1,
+            "title": "",
+            "membership_id_winner": -1,
+            "start_date": "0001-01-01",
+            "end_date": "0001-01-01",
+            "election_identifier": ""
+        }
+    elif endpoint == "chamber":
+        dummy_data = {
+            "area_id": -1,
+            "name": ""
         }
     return dummy_data
 

@@ -1,0 +1,1 @@
+[{"title": "Mayor", "role": "3", "area_id": "420", "chamber_id": "402", "contest_id": "419", "is_deleted": true}]
