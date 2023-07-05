@@ -1,14 +1,14 @@
 from sheets import sheet_reader
 from utils import colors_to_list, make_banner, make_table, write_csv
 
-SHEET_ID = "18E0FFGli2OuHaD-ulSsCvfE8k5lzUjIMPpARuF-bnog"
+SHEET_ID = "1lngH75GyTe5u61hQfqHqseWUjDq5jhuT2TP3hf1CDnU"
 CSV_DB_PATH = 'csv_db'
 
 # Struct read ranges
 ST_RANGES = {
     "area": "A1:H84", "chamber": "A1:C83", "role": "A1:F83",
-    "coalition": "A1:D7", "party": "A1:F111",
-    "profession": "A1:B86", "contest": "A1:G33"
+    "coalition": "A1:D7", "party": "A1:F114",
+    "profession": "A1:B86", "contest": "A1:C33"
     # "past-membership": "A1:G1",
     }
 
@@ -53,7 +53,7 @@ write_csv(make_table(party_header, party_data), f"{CSV_DB_PATH}/party")
 party_data = colors_to_list(party_data)
 for party in party_data:
     del party["party_id"]
-parties = sheet_reader(SHEET_ID, "Table party!B2:B96", as_list=True)
+parties = sheet_reader(SHEET_ID, "Table party!B2:B114", as_list=True)
 
 # CONTEST
 contest_data = sheet_reader(SHEET_ID, f"Table contest!{ST_RANGES['contest']}")
@@ -61,7 +61,7 @@ contest_header = contest_data[0].keys()
 write_csv(make_table(contest_header, contest_data), f"{CSV_DB_PATH}/contest")
 for contest in contest_data:
     del contest["contest_id"]
-contest_chambers = sheet_reader(SHEET_ID, "Table contest!C2:C33",
+contest_chambers = sheet_reader(SHEET_ID, "Table contest!C2:C83",
                                 as_list=True)
 # PROFESSION
 profession_range = f"Catalogue profession!{ST_RANGES['profession']}"
