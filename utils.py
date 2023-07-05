@@ -254,13 +254,27 @@ def get_contest_id(data, contest_chambers):
         if location in contest_chamber:
             return i
 
-    print("person_id: " + str(data["person_id"]))
-    print("role_type: " + str(data["role_type"]))
-    # print("role_type_es: " + str(Catalogues.SPANISH_ROLES[data["role_type"]]))
-    print("location: " + str(location) + "\n")
-    # print("contest_chamber: " + str(contest_chambers))
+    # Se quedo para debug :( hay que arreglar
+    #print("person_id: " + str(data["person_id"]))
+    #print("role_type: " + str(data["role_type"]))
+    #print("location: " + str(location) + "\n")
     return -1
 
+def get_role_id(roles, contest_id):
+    """**Gets the role id **
+
+    :return: The role id if any, else
+    :rtype: int
+    """
+
+    for i, role in enumerate(roles, start=1):
+        if int(role["contest_id"]) == int(contest_id):
+            #print("Role SI " + role["contest_id"] + " vs " + str(contest_id) + ": " + str(i))
+            return i
+
+    # Se quedo para debug :( hay que arreglar
+    # print("Role NO " + role["contest_id"] + " vs " + str(contest_id))
+    return -1
 
 def make_person_struct(dataset, contest_chambers, header):
     """**Function that makes person data**
@@ -362,7 +376,7 @@ def make_person_profession(dataset, professions):
     return lines
 
 
-def make_membership(dataset, parties, coalitions, contest_chambers, header):
+def make_membership(dataset, parties, coalitions, contest_chambers, header, roles):
     """**Makes membership data**
 
     This functions makes a valid list of membership data for the API
@@ -394,17 +408,18 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header):
             print("person_id:" + str(i) + " no party")
 
         contest_id = get_contest_id(data, contest_chambers)
-
-        if (contest_id < 0):
-            print("role_id: " + str(contest_id))
-            print("person_id: " + str(i))
+        role_id = get_role_id(roles, contest_id)
+        # Se quedo para debug :( hay que arreglar
+        #if (contest_id < 0):
+            #print("role_id: " + str(contest_id))
+            #print("person_id: " + str(i))
 
         lines.append({
             "is_deleted": data["is_deleted"],
             "membership_id": i,
             "person_id": i,
             # TODO: By now contest_id == role_id. Change soon
-            "role_id": contest_id,
+            "role_id": role_id,
             "party_id": party_id,
             "coalition_id": coalition_id,
             "contest_id": contest_id,
