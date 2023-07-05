@@ -20,9 +20,9 @@ CSV_DB_PATH = 'csv_db_officeholders'
 
 # Officeholders
 ST_RANGES = {
-    "area": "A1:H1132", "chamber": "A1:C1131", "role": "A1:F1131",
+    "area": "A1:H1137", "chamber": "A1:C1137", "role": "A1:F1137",
     "coalition": "A1:D49", "party": "A1:F80",
-    "profession": "A1:B119", "contest": "A1:G1131"
+    "profession": "A1:B119", "contest": "A1:G1137"
     # "past-membership": "A1:G1",
     }
 
@@ -85,7 +85,7 @@ for contest in contest_data:
     if contest["contest_id"] == "":
         contest["is_deleted"] = True
     del contest["contest_id"]
-contest_chambers = sheet_reader(SHEET_ID, "Table contest!C2:C1131",
+contest_chambers = sheet_reader(SHEET_ID, "Table contest!C2:C1137",
                                 as_list=True)
 # PROFESSION
 profession_range = f"Catalogue profession!{ST_RANGES['profession']}"

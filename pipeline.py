@@ -12,9 +12,9 @@ from utils import (make_banner, verification_process,
 # ID sheets Campaign
 #CAPTURE_SHEET_ID = "1mk9LTI5RBYwrEPzILeDY925VJbLVmEoZyRzaa1gZ_hk"
 # ID sheets officeholders
-CAPTURE_SHEET_ID = "1c1l3Pwj1HGmF41pMIe9fcvLV2VMJln6AMBqJ-CTYpa4"
+CAPTURE_SHEET_ID = "146HBFWr_6_jvmCtTPHoDcSI3dFZcqSUPdmoc69oayrU"
 # Capture Read Ranges
-READ_RANGE = "Todos!A1:AG4053"
+READ_RANGE = "Todos!A1:AG4186"
 COALITION_URL_RANGE = "URL_logo_partido_coal!A1:H37"
 PARTY_URL_RANGE = "URL_logo_partido_coal!I1:R62"
 CSV_DB_PATH = 'csv_db'
