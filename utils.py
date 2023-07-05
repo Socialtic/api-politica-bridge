@@ -225,7 +225,8 @@ def get_contest_id(data, contest_chambers):
         location = data["state"].lower()
     # Alcaldías (presidencia)
     elif data["role_type"] == "executiveCouncil":
-        location = data["area"].lower()
+        #location = data["area"].lower()
+        location = f"intendente/a de {data['area'].lower()} pcia de {data['state'].lower()}"
     # Diputación
     elif data["role_type"] == "legislatorLowerBody":
         # location = f"distrito federal {data['area']} de {data['state'].lower()}"
@@ -240,11 +241,11 @@ def get_contest_id(data, contest_chambers):
         if location in contest_chamber:
             return i
 
-    print("person_id: " + str(data["person_id"]))
-    print("role_type: " + str(data["role_type"]))
-    # print("role_type_es: " + str(Catalogues.SPANISH_ROLES[data["role_type"]]))
-    print("location: " + str(location) + "\n")
-    # print("contest_chamber: " + str(contest_chambers))
+    # Se quedo para debug :( hay que arreglar
+    # print("person_id: " + str(data["person_id"]))
+    #print("role_type: " + str(data["role_type"]))
+    # print("location: " + str(location) + "\n")
+
     return -1
 
 
