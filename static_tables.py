@@ -1,14 +1,14 @@
 from sheets import sheet_reader
 from utils import colors_to_list, make_banner, make_table, write_csv
 
-SHEET_ID = "1euU_cvDHR-wxYNH9k_VLKuFCyU5gYlJCLDX1-1MTZ1M"
+SHEET_ID = "1W8F9cf88hRXPEeLQEVbXHtQ2K6BnoXRD9vRDWL3Qpeg"
 CSV_DB_PATH = 'csv_db'
 
 # Struct read ranges
 ST_RANGES = {
-    "area": "A1:H47", "chamber": "A1:C47", "role": "A1:F47",
-    "coalition": "A1:D26", "party": "A1:F258",
-    "profession": "A1:B119", "contest": "A1:G47"
+    "area": "A1:H111", "chamber": "A1:C111", "role": "A1:F111",
+    "coalition": "A1:D68", "party": "A1:F293",
+    "profession": "A1:B119", "contest": "A1:G111"
     # "past-membership": "A1:G1",
     }
 
@@ -49,7 +49,7 @@ write_csv(make_table(coalition_header, coalition_data),
 coalition_data = colors_to_list(coalition_data)
 for coalition in coalition_data:
     del coalition["coalition_id"]
-coalitions_catalogue = sheet_reader(SHEET_ID, "Table coalition!B2:B26",
+coalitions_catalogue = sheet_reader(SHEET_ID, "Table coalition!B2:B68",
                                     as_list=True)
 
 # PARTY
@@ -61,7 +61,7 @@ for party in party_data:
     if party["party_id"] == "":
         party["is_deleted"] = True
     del party["party_id"]
-parties = sheet_reader(SHEET_ID, "Table party!B2:B258", as_list=True)
+parties = sheet_reader(SHEET_ID, "Table party!B2:B293", as_list=True)
 
 # CONTEST
 contest_data = sheet_reader(SHEET_ID, f"Table contest!{ST_RANGES['contest']}")

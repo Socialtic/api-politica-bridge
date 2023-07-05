@@ -10,11 +10,11 @@ from utils import (make_banner, verification_process,
                    make_other_names_struct, make_person_profession,
                    make_membership, make_url_struct, send_data)
 # ID sheets
-CAPTURE_SHEET_ID = "1ty6nlyEb88RrLZHRziITZP6FkajQKMq-JlRgc-jEr78"
+CAPTURE_SHEET_ID = "1U7NHlEv0TS1Io15OLtkWsPt-fIrx08S0tTAEsa5LMFc"
 # Capture Read Ranges
-READ_RANGE = "Todos!A1:AL1880"
-COALITION_URL_RANGE = "URL_logo_partido_coal!A1:H26"
-PARTY_URL_RANGE = "URL_logo_partido_coal!J1:S135"
+READ_RANGE = "Todos!A1:AL2955"
+COALITION_URL_RANGE = "URL_logo_partido_coal!A1:H68"
+PARTY_URL_RANGE = "URL_logo_partido_coal!J1:S289"
 CSV_DB_PATH = 'csv_db'
 API_BASE = 'http://localhost:5000/'
 # API endpoints
@@ -104,7 +104,7 @@ def main():
                          "parent_membership_id", "changed_from_substitute",
                          "date_changed_from_substitute"]
     membership_data = make_membership(dataset, parties, coalitions_catalogue,
-                                      contest_chambers, membership_header)
+                                      contest_chambers, membership_header, role_data)
     membership_table = make_table(membership_header, membership_data)
     write_csv(membership_table, f"{CSV_DB_PATH}/membership")
     for membership in membership_data:
