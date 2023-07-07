@@ -21,7 +21,7 @@ CSV_DB_PATH = 'csv_db_officeholders'
 # Officeholders
 ST_RANGES = {
     "area": "A1:H1137", "chamber": "A1:C1137", "role": "A1:F1137",
-    "coalition": "A1:D49", "party": "A1:F80",
+    "coalition": "A1:D54", "party": "A1:F80",
     "profession": "A1:B119", "contest": "A1:G1137"
     # "past-membership": "A1:G1",
     }
@@ -63,7 +63,7 @@ write_csv(make_table(coalition_header, coalition_data),
 coalition_data = colors_to_list(coalition_data)
 for coalition in coalition_data:
     del coalition["coalition_id"]
-coalitions_catalogue = sheet_reader(SHEET_ID, "Table coalition!B2:B49",
+coalitions_catalogue = sheet_reader(SHEET_ID, "Table coalition!B2:B54",
                                     as_list=True)
 
 # PARTY
