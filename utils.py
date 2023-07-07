@@ -688,12 +688,12 @@ def send_data(base_url, endpoint, dataset):
             try:
                 # Sending row data to api
                 r = requests.post(full_url, json=row, headers=HEADERS)
+                if r.status_code != 201:
+                    print(f"[ERROR]: {endpoint} #{i} status code: {r.status_code}")
+                    print(f"msg: {r.json()['message']}")
             except r_excepts.ConnectionError:
                 print("[CONNECTION ERROR]")
                 print(f"#{i} | url: {full_url} | data:{row}")
-            if r.status_code != 201:
-                print(f"[ERROR]: {endpoint} #{i} status code: {r.status_code}")
-                print(f"msg: {r.json()['message']}")
             bar.update(i - 1)
     if deleted:
         with open(f"deleted/{endpoint}.txt", "a") as f:
