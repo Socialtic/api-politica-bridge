@@ -10,7 +10,7 @@ def last_name_check(lastname):
     :return: True is pass test, False otherwise
     :rtype: bool
     """
-    return True if len(lastname.split(' ')) >= 2 else False
+    return True if len(lastname) >= 3 else False
 
 
 def membership_type_check(membership):
@@ -35,7 +35,7 @@ def date_format_check(date, date_type):
     :rtype: bool
     """
     birth_pattern = '(^(19|20)[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$|^$)'
-    start_end_pattern = '(^202[1-7]-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$|^$)'
+    start_end_pattern = '(^20[0-2][0-9]-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$|^$)'
     if date_type == "birth":
         return True if re.search(birth_pattern, date) or "" else False
     elif date_type == "start_end":
