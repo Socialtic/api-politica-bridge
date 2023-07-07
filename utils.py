@@ -360,14 +360,17 @@ def make_person_profession(dataset, professions):
             if re.search(pattern, field):
                 profession = data[field].lower()
                 if profession:
-                    profession_id = professions.index(profession) + 1
-                    person_profession_id += 1
-                    lines.append({
-                        "person_profession_id": person_profession_id,
-                        "is_deleted": data["is_deleted"],
-                        "person_id": i,
-                        "profession_id": profession_id
-                    })
+                    try:
+                        profession_id = professions.index(profession) + 1
+                        person_profession_id += 1
+                        lines.append({
+                            "person_profession_id": person_profession_id,
+                            "is_deleted": data["is_deleted"],
+                            "person_id": i,
+                            "profession_id": profession_id
+                        })
+                    except Exception:
+                        print("make_person_profession error", i, "profession not found", profession, professions)
     return lines
 
 
@@ -391,30 +394,38 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header, role
     """
     lines = []
     for i, data in enumerate(dataset, start=1):
-        if data["coalition"]:
-            coalition_id = coalitions.index(data["coalition"].lower().strip()) + 1
-        else:
-            coalition_id = -1
-        contest_id = get_contest_id(data, contest_chambers)
-        role_id = get_role_id(roles, contest_id)
-        lines.append({
-            "is_deleted": data["is_deleted"],
-            "membership_id": i,
-            "person_id": i,
-            # TODO: By now contest_id == role_id. Change soon
-            "role_id": role_id,
-            "party_id": parties.index(data["abbreviation"].lower()) + 1,
-            "coalition_id": coalition_id,
-            "contest_id": contest_id,
-            "goes_for_coalition": True if data["coalition"] else False,
-            "membership_type": Catalogues.MEMBERSHIP_TYPES.index(data["membership_type"]),
-            "goes_for_reelection": False,  # Always false
-            "start_date": data["start_date"], "end_date": data["end_date"],
-            "is_substitute": True if data["is_substitute"] == "Sí" else False,
-            "parent_membership_id": i if data["is_substitute"] == "Sí" else -1,
-            "changed_from_substitute": False,  # TODO:
-            "date_changed_from_substitute": "0001-01-01"  # TODO:
-        })
+        try:
+            if data["coalition"]:
+                coalition_id = coalitions.index(data["coalition"].lower().strip()) + 1
+            else:
+                coalition_id = -1
+        except ValueError:
+            print("make_membership coalitions error in line", i, "'",data["coalition"].lower().strip(), "'","not found")
+
+        try:
+            contest_id = get_contest_id(data, contest_chambers)
+            role_id = get_role_id(roles, contest_id)
+            lines.append({
+                "is_deleted": data["is_deleted"],
+                "membership_id": i,
+                "person_id": i,
+                # TODO: By now contest_id == role_id. Change soon
+                "role_id": role_id,
+                "party_id": parties.index(data["abbreviation"].lower()) + 1,
+                "coalition_id": coalition_id,
+                "contest_id": contest_id,
+                "goes_for_coalition": True if data["coalition"] else False,
+                "membership_type": Catalogues.MEMBERSHIP_TYPES.index(data["membership_type"]),
+                "goes_for_reelection": False,  # Always false
+                "start_date": data["start_date"], "end_date": data["end_date"],
+                "is_substitute": True if data["is_substitute"] == "Sí" else False,
+                "parent_membership_id": i if data["is_substitute"] == "Sí" else -1,
+                "changed_from_substitute": False,  # TODO:
+                "date_changed_from_substitute": "0001-01-01"  # TODO:
+            })
+        except ValueError:
+            print("make_membership parties error in line", i, "'",data["abbreviation"].lower(), "'","not found")
+
     return lines
 
 
