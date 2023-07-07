@@ -7,7 +7,7 @@ CSV_DB_PATH = 'csv_db'
 # Struct read ranges
 ST_RANGES = {
     "area": "A1:H84", "chamber": "A1:C83", "role": "A1:F83",
-    "coalition": "A1:D7", "party": "A1:F114",
+    "coalition": "A1:D7", "party": "A1:F118",
     "profession": "A1:B86", "contest": "A1:C33"
     # "past-membership": "A1:G1",
     }
@@ -53,7 +53,7 @@ write_csv(make_table(party_header, party_data), f"{CSV_DB_PATH}/party")
 party_data = colors_to_list(party_data)
 for party in party_data:
     del party["party_id"]
-parties = sheet_reader(SHEET_ID, "Table party!B2:B114", as_list=True)
+parties = sheet_reader(SHEET_ID, "Table party!B2:B118", as_list=True)
 
 # CONTEST
 contest_data = sheet_reader(SHEET_ID, f"Table contest!{ST_RANGES['contest']}")

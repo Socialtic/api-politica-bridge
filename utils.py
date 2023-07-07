@@ -210,6 +210,9 @@ def make_table(header, dataset):
                         table += f'{cell},'
                 except AttributeError:
                     table += f"{row_data[field]},"
+                except KeyError:
+                    print("make_table KeyError",field,row_data)
+                    pass
             table += '\n'
     return table
 
@@ -221,6 +224,7 @@ def get_contest_id(data, contest_chambers):
     :rtype: int
     """
     # Gubernaturas
+    location = ""
     if data["role_type"] == "governmentOfficer":
         location = data["state"].lower()
     # Alcaldías (presidencia)
@@ -265,30 +269,37 @@ def make_person_struct(dataset, contest_chambers, header):
     """
     people = []
     for data in dataset:
-        row = dict()
-        row["is_deleted"] = data["is_deleted"]
-        for field in header:
-            if field == "gender":
-                row[field] = 2 if data[field] == "F" else 1
-            elif field == "dead_or_alive":
-                row[field] = True if data[field] == "Vivo" else False
-            elif field == "last_degree_of_studies":
-                if data[field]:
-                    last_degree = data[field].upper()
-                    row[field] = Catalogues.DEGREES_OF_STUDIES.index(last_degree)
+        try:
+            row = dict()
+            row["is_deleted"] = data["is_deleted"]
+            for field in header:
+                if field == "gender":
+                    row[field] = 2 if data[field] == "F" else 1
+                elif field == "dead_or_alive":
+                    row[field] = True if data[field] == "Vivo" else False
+                elif field == "last_degree_of_studies":
+                    if data[field]:
+                        try:
+                            last_degree = data[field].upper()
+                            row[field] = Catalogues.DEGREES_OF_STUDIES.index(last_degree)
+                        except ValueError:
+                            print("make_person_struct DEGREES_OF_STUDIES error in line", data[field].upper(),"not found")
+
+                    else:
+                        row[field] = -1
+                elif field == "contest_id":
+                    row[field] = get_contest_id(data, contest_chambers)
+                elif field == "date_birth":
+                    if data[field]:
+                        row[field] = data[field]
+                    else:
+                        row[field] = '0001-01-01'
                 else:
-                    row[field] = -1
-            elif field == "contest_id":
-                row[field] = get_contest_id(data, contest_chambers)
-            elif field == "date_birth":
-                if data[field]:
                     row[field] = data[field]
-                else:
-                    row[field] = '0001-01-01'
-            else:
-                row[field] = data[field]
-        people.append(row)
-    return people
+            people.append(row)
+        except ValueError:
+            print("make_person_struct error in line", row,"not found")
+        return people
 
 
 def make_other_names_struct(dataset):
@@ -338,14 +349,17 @@ def make_person_profession(dataset, professions):
             if re.search(pattern, field):
                 profession = data[field].lower()
                 if profession:
-                    profession_id = professions.index(profession) + 1
-                    person_profession_id += 1
-                    lines.append({
-                        "person_profession_id": person_profession_id,
-                        "is_deleted": data["is_deleted"],
-                        "person_id": i,
-                        "profession_id": profession_id
-                    })
+                    try:
+                        profession_id = professions.index(profession) + 1
+                        person_profession_id += 1
+                        lines.append({
+                            "person_profession_id": person_profession_id,
+                            "is_deleted": data["is_deleted"],
+                            "person_id": i,
+                            "profession_id": profession_id
+                        })
+                    except Exception:
+                        print("make_person_profession error", i, "profession not found", profession)
     return lines
 
 
@@ -369,36 +383,40 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header):
     """
     lines = []
     for i, data in enumerate(dataset, start=1):
-        # if data["coalition"]:
-        #    coalition_id = coalitions.index(data["coalition"].lower().strip()) + 1
-        # else:
-        #    coalition_id = -1
-        coalition_id = -1
-        contest_id = get_contest_id(data, contest_chambers)
+        try: 
+            # if data["coalition"]:
+            #    coalition_id = coalitions.index(data["coalition"].lower().strip()) + 1
+            # else:
+            #    coalition_id = -1
+            coalition_id = -1
+            contest_id = get_contest_id(data, contest_chambers)
 
-        if (contest_id < 0):
-            print("role_id: " + str(contest_id))
-            print("person_id: " + str(i))
+            # if (contest_id < 0):
+            #     print("role_id: " + str(contest_id))
+            #     print("person_id: " + str(i))
 
-        lines.append({
-            "is_deleted": data["is_deleted"],
-            "membership_id": i,
-            "person_id": i,
-            # TODO: By now contest_id == role_id. Change soon
-            "role_id": contest_id,
-            "party_id": parties.index(data["partido"].lower()) + 1,
-            "coalition_id": coalition_id,
-            "contest_id": contest_id,
-            #"goes_for_coalition": True if data["coalition"] else False,
-            "goes_for_coalition": False,
-            "membership_type": Catalogues.MEMBERSHIP_TYPES.index(data["membership_type"]),
-            "goes_for_reelection": False,  # Always false
-            "start_date": data["start_date"], "end_date": data["end_date"],
-            "is_substitute": True if data["is_substitute"] == "Sí" else False,
-            "parent_membership_id": i if data["is_substitute"] == "Sí" else -1,
-            "changed_from_substitute": False,  # TODO:
-            "date_changed_from_substitute": "0001-01-01"  # TODO:
-        })
+            lines.append({
+                "is_deleted": data["is_deleted"],
+                "membership_id": i,
+                "person_id": i,
+                # TODO: By now contest_id == role_id. Change soon
+                "role_id": contest_id,
+                "party_id": parties.index(data["partido"].lower()) + 1,
+                "coalition_id": coalition_id,
+                "contest_id": contest_id,
+                #"goes_for_coalition": True if data["coalition"] else False,
+                "goes_for_coalition": False,
+                "membership_type": Catalogues.MEMBERSHIP_TYPES.index(data["membership_type"]),
+                "goes_for_reelection": False,  # Always false
+                "start_date": data["start_date"], "end_date": data["end_date"],
+                "is_substitute": True if data["is_substitute"] == "Sí" else False,
+                "parent_membership_id": i if data["is_substitute"] == "Sí" else -1,
+                "changed_from_substitute": False,  # TODO:
+                "date_changed_from_substitute": "0001-01-01"  # TODO:
+            })
+        except ValueError:
+            print("make_membership parties error in line", i, "'",data["partido"].lower(), "'","not found")
+        
     return lines
 
 
@@ -622,12 +640,12 @@ def send_data(base_url, endpoint, dataset):
             try:
                 # Sending row data to api
                 r = requests.post(full_url, json=row, headers=HEADERS)
+                if r.status_code != 201:
+                    print(f"[ERROR]: {endpoint} #{i} status code: {r.status_code}")
+                    print(f"msg: {r.json()['message']}")
             except r_excepts.ConnectionError:
                 print("[CONNECTION ERROR]")
                 print(f"#{i} | url: {full_url} | data:{row}")
-            if r.status_code != 201:
-                print(f"[ERROR]: {endpoint} #{i} status code: {r.status_code}")
-                print(f"msg: {r.json()['message']}")
             bar.update(i - 1)
     if deleted:
         with open(f"deleted/{endpoint}.txt", "a") as f:
