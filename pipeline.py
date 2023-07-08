@@ -67,6 +67,7 @@ def main():
                      "last_degree_of_studies", "contest_id"]
     # This list is ready to be send to the API
     person_data = make_person_struct(dataset, contest_chambers, person_header)
+    # print(person_data);
     # Making a table for double check
     person_table = make_table(person_header, person_data)
     write_csv(person_table, f"{CSV_DB_PATH}/person")
