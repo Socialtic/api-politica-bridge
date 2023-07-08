@@ -20,7 +20,7 @@ class Catalogues:
     DEGREES_OF_STUDIES = ['', 'ELEMENTARY', 'HIGH SCHOOL', 'ASSOCIATE DEGREE',
                           'BACHELOR’S DEGREE',
                           'UNIVERSITY 1ST PROFESSIONAL DEGREE',
-                          'MASTER DEGREE', 'PHD DEGREE']
+                          'MASTER DEGREE', 'PHD DEGREE', 'BACHELOR\'S DEGREE']
     #   GOBERNADOR, DIPUTADO , PRESIDENTE MUNICIPAL
     DISTRICT_TYPES = ['NATIONAL_EXEC', 'REGIONAL_EXEC', 'NATIONAL_LOWER',
                       'LOCAL_EXEC']
@@ -145,7 +145,7 @@ def verification_process(dataset, header):
                 continue
             # Adding candidate name at the end of the line
             else:
-                line += f",{row['full_name']}"
+                line += f",{row['full_name']} - "+row["URL_FB_profile"]
                 lines.append(line)
             bar.update(i - 1)
     return lines
@@ -267,6 +267,7 @@ def make_person_struct(dataset, contest_chambers, header):
     :return: List with dicts that contains person data
     :rtype: list
     """
+    # print(dataset);
     people = []
     for data in dataset:
         try:
@@ -299,7 +300,7 @@ def make_person_struct(dataset, contest_chambers, header):
             people.append(row)
         except ValueError:
             print("make_person_struct error in line", row,"not found")
-        return people
+    return people
 
 
 def make_other_names_struct(dataset):
@@ -382,8 +383,9 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header):
     :rtype: list
     """
     lines = []
+    # print(parties);
     for i, data in enumerate(dataset, start=1):
-        try: 
+        # try: 
             # if data["coalition"]:
             #    coalition_id = coalitions.index(data["coalition"].lower().strip()) + 1
             # else:
@@ -414,8 +416,8 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header):
                 "changed_from_substitute": False,  # TODO:
                 "date_changed_from_substitute": "0001-01-01"  # TODO:
             })
-        except ValueError:
-            print("make_membership parties error in line", i, "'",data["partido"].lower(), "'","not found")
+        # except ValueError:
+            # print("make_membership parties error in line", i, "'",data["partido"].lower(), "'","not found")
         
     return lines
 
@@ -646,6 +648,7 @@ def send_data(base_url, endpoint, dataset):
             except r_excepts.ConnectionError:
                 print("[CONNECTION ERROR]")
                 print(f"#{i} | url: {full_url} | data:{row}")
+                # exit()
             bar.update(i - 1)
     if deleted:
         with open(f"deleted/{endpoint}.txt", "a") as f:
