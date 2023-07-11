@@ -23,7 +23,7 @@ class Catalogues:
                           'MASTER DEGREE', 'PHD DEGREE', 'BACHELOR\'S DEGREE']
     #   GOBERNADOR, DIPUTADO , PRESIDENTE MUNICIPAL
     DISTRICT_TYPES = ['NATIONAL_EXEC', 'REGIONAL_EXEC', 'NATIONAL_LOWER',
-                      'LOCAL_EXEC']
+                      'LOCAL_EXEC', 'NATIONAL_UPPER', 'NATIONAL_VICE_EXEC', 'REGIONAL_VICE_EXECUTIVE']
     GENDERS = ['', 'M', 'F']
     MEMBERSHIP_TYPES = ['', 'officeholder', 'campaigning_politician',
                         'party_leader']
@@ -31,7 +31,8 @@ class Catalogues:
     OTHER_NAMES_TYPES = ['', 'preferred', 'nickname', 'ballot_name']
     #   GOBERNADOR, DIPUTADO , PRESIDENTE MUNICIPAL
     ROLE_TYPES = ['', 'governmentOfficer', 'legislatorLowerBody',
-                  'executiveCouncil', 'legislatorUpperBody']
+                  'executiveCouncil', 'legislatorUpperBody', 
+                  'regionalLegislator', 'deputyHeadOfGovernment', 'viceGovernmentOfficer']
     SPANISH_ROLES = {'governmentOfficer': "gubernatura",
                      "executiveCouncil": "presidencia",
                      "legislatorLowerBody": "diputación",
@@ -226,7 +227,7 @@ def get_contest_id(data, contest_chambers):
     # Gubernaturas
     location = ""
     if data["role_type"] == "governmentOfficer":
-        location = data["state"].lower()
+        location = f"gobernador/a de {data['state'].lower()}"
     # Alcaldías (presidencia)
     elif data["role_type"] == "executiveCouncil":
         #location = data["area"].lower()
@@ -247,7 +248,7 @@ def get_contest_id(data, contest_chambers):
 
     # Se quedo para debug :( hay que arreglar
     # print("person_id: " + str(data["person_id"]))
-    #print("role_type: " + str(data["role_type"]))
+    # print("role_type: " + str(data["role_type"]))
     # print("location: " + str(location) + "\n")
 
     return -1
@@ -390,6 +391,7 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header):
             #    coalition_id = coalitions.index(data["coalition"].lower().strip()) + 1
             # else:
             #    coalition_id = -1
+            # print(data)
             coalition_id = -1
             contest_id = get_contest_id(data, contest_chambers)
 

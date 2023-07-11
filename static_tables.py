@@ -8,7 +8,7 @@ CSV_DB_PATH = 'csv_db'
 ST_RANGES = {
     "area": "A1:H84", "chamber": "A1:C83", "role": "A1:F83",
     "coalition": "A1:D7", "party": "A1:F128",
-    "profession": "A1:B86", "contest": "A1:C73"
+    "profession": "A1:B86", "contest": "A1:G83"
     # "past-membership": "A1:G1",
     }
 
@@ -61,8 +61,11 @@ contest_header = contest_data[0].keys()
 write_csv(make_table(contest_header, contest_data), f"{CSV_DB_PATH}/contest")
 for contest in contest_data:
     del contest["contest_id"]
-contest_chambers = sheet_reader(SHEET_ID, "Table contest!C2:C73",
+contest_chambers = sheet_reader(SHEET_ID, "Table contest!C2:C83",
                                 as_list=True)
+
+# print(contest_chambers);
+
 # PROFESSION
 profession_range = f"Catalogue profession!{ST_RANGES['profession']}"
 profession_data = sheet_reader(SHEET_ID, profession_range)
