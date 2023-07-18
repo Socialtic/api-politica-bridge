@@ -23,16 +23,17 @@ class Catalogues:
                           'MASTER DEGREE', 'PHD DEGREE', 'BACHELOR\'S DEGREE']
     #   GOBERNADOR, DIPUTADO , PRESIDENTE MUNICIPAL
     DISTRICT_TYPES = ['NATIONAL_EXEC', 'REGIONAL_EXEC', 'NATIONAL_LOWER',
-                      'LOCAL_EXEC', 'NATIONAL_UPPER', 'NATIONAL_VICE_EXEC', 'REGIONAL_VICE_EXECUTIVE']
+                      'LOCAL_EXEC', 'NATIONAL_UPPER']
     GENDERS = ['', 'M', 'F']
     MEMBERSHIP_TYPES = ['', 'officeholder', 'campaigning_politician',
                         'party_leader']
     # privilegiado, apodo, nombre de la boleta
     OTHER_NAMES_TYPES = ['', 'preferred', 'nickname', 'ballot_name']
     #   GOBERNADOR, DIPUTADO , PRESIDENTE MUNICIPAL
+    # Source: https://developers.google.com/civic-information/docs/v2/representatives#elected-offices
     ROLE_TYPES = ['', 'governmentOfficer', 'legislatorLowerBody',
                   'executiveCouncil', 'legislatorUpperBody', 
-                  'regionalLegislator', 'deputyHeadOfGovernment', 'viceGovernmentOfficer']
+                  'regionalLegislator', 'deputyHeadOfGovernment', 'viceGovernmentOfficer', 'headOfGovernment']
     SPANISH_ROLES = {'governmentOfficer': "gubernatura",
                      "executiveCouncil": "presidencia",
                      "legislatorLowerBody": "diputación",
@@ -134,12 +135,12 @@ def verification_process(dataset, header):
             professions = get_columns_data(row, "profession")
             # TODO: from 2 to 6 only
             line += ",professions" if not profession_check(professions.values()) else ""
-            line += url_check(row["Website"].split(','), "light", "Website")
-            line += url_check(row["URL_FB_page"].split(','), "strict", "URL_FB_page")
-            line += url_check(row["URL_FB_profile"].split(','), "strict", "URL_FB_profile")
-            line += url_check(row["URL_IG"].split(','), "strict", "URL_IG")
-            line += url_check(row["URL_TW"].split(','), "strict", "URL_TW")
-            line += url_other_check(row["URL_others"].split(","))
+            line += url_check(row["Website"].strip().split(','), "light", "Website")
+            line += url_check(row["URL_FB_page"].strip().split(','), "strict", "URL_FB_page")
+            line += url_check(row["URL_FB_profile"].strip().split(','), "strict", "URL_FB_profile")
+            line += url_check(row["URL_IG"].strip().split(','), "strict", "URL_IG")
+            line += url_check(row["URL_TW"].strip().split(','), "strict", "URL_TW")
+            line += url_other_check(row["URL_others"].strip().split(","))
             # If no errors, discard this line
             if line == str(i):
                 line = ''
@@ -217,13 +218,13 @@ def make_table(header, dataset):
             table += '\n'
     return table
 
-
 def get_contest_id(data, contest_chambers):
     """**Gets the contest id based on Catalogues**
 
     :return: The contest id if any, else
     :rtype: int
     """
+    ##TODO: Extract to constants
     # Gubernaturas
     location = ""
     if data["role_type"] == "governmentOfficer":
@@ -240,6 +241,18 @@ def get_contest_id(data, contest_chambers):
     elif data["role_type"] == "legislatorUpperBody":
         # location = data["state"].lower()
         location = f"senador/a nacional por {data['state'].lower()}"
+
+    elif data["role_type"] == "headOfGovernment":
+        # location = data["state"].lower()
+        location = f"presidencia de {data['state'].lower()}"
+
+    elif data["role_type"] == "deputyHeadOfGovernment":
+        # location = data["state"].lower()
+        location = f"vicepresidencia de {data['state'].lower()}"
+
+    elif data["role_type"] == "viceGovernmentOfficer":
+        # location = data["state"].lower()
+        location = f"vicegobernatura de {data['state'].lower()}"
 
     for i, contest_chamber in enumerate(contest_chambers, start=1):
         # if location in contest_chamber and Catalogues.SPANISH_ROLES[data["role_type"]] in contest_chamber:
@@ -387,7 +400,11 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header):
     lines = []
     # print(parties);
     for i, data in enumerate(dataset, start=1):
-        # try: 
+        try: 
+
+            ## Don't create memberships for persons without id (we use it to hide them)
+            if not data["person_id"]:
+                continue            
             # if data["coalition"]:
             #    coalition_id = coalitions.index(data["coalition"].lower().strip()) + 1
             # else:
@@ -399,6 +416,10 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header):
             # if (contest_id < 0):
             #     print("role_id: " + str(contest_id))
             #     print("person_id: " + str(i))
+        except ValueError:
+            print("make_membership get contest error in line", i, "'",data, "'","not found")
+
+        try:
 
             lines.append({
                 "is_deleted": data["is_deleted"],
@@ -419,8 +440,8 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header):
                 "changed_from_substitute": False,  # TODO:
                 "date_changed_from_substitute": "0001-01-01"  # TODO:
             })
-        # except ValueError:
-            # print("make_membership parties error in line", i, "'",data["partido"].lower(), "'","not found")
+        except ValueError:
+            print("make_membership parties error in line", i, "'",data["partido"].lower(), "'","not found")
         
     return lines
 
@@ -992,13 +1013,13 @@ def get_capture_lines(dataset):
         line += people["profession_4"] + ','
         line += people["profession_5"] + ','
         line += people["profession_6"] + ','
-        line += f'"{people["Website"]}",'
-        line += f'"{people["URL_FB_page"]}",'
-        line += f'"{people["URL_FB_profile"]}",'
-        line += f'"{people["URL_IG"]}",'
-        line += f'"{people["URL_TW"]}",'
-        line += f'"{people["URL_others"]}",'
-        line += f'"{people["URL_photo"]}",'
+        line += f'"{people["Website"].strip()}",'
+        line += f'"{people["URL_FB_page"].strip()}",'
+        line += f'"{people["URL_FB_profile"].strip()}",'
+        line += f'"{people["URL_IG"].strip()}",'
+        line += f'"{people["URL_TW"].strip()}",'
+        line += f'"{people["URL_others"].strip()}",'
+        line += f'"{people["URL_photo"].strip()}",'
         line += f'"{people["source_of_truth"]}",'
         result.append(line)
     return result
