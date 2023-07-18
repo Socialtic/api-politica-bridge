@@ -1,4 +1,5 @@
 import sys
+import json
 from datetime import datetime
 from sheets import sheet_reader
 from static_tables import (area_data, chamber_data, role_data, coalition_data,
@@ -9,12 +10,24 @@ from utils import (make_banner, verification_process,
                    write_csv, make_table, make_person_struct,
                    make_other_names_struct, make_person_profession,
                    make_membership, make_url_struct, send_data)
+
+## TODO: Check command line parameters
 # ID sheets
-CAPTURE_SHEET_ID = "1c3gwMPO6xxFD5N0ScasrDgWBjbmP1cqbAEBHv792t5I"
+if (len(sys.argv[1]) < 1 or len(sys.argv[2]) < 1 ):
+    exit("Missing command line parameters DB_TYPE and COUNTRY_FILE")
+
+COUNTRY_FILE = sys.argv[2];
+
+with open(COUNTRY_FILE, 'r') as f:
+    COUNTRY = json.load(f)
+
+CAPTURE_SHEET_ID = COUNTRY["CAPTURE_SHEET_ID"]
 # Capture Read Ranges
-READ_RANGE = "Todos!A1:AL1635"
-COALITION_URL_RANGE = "URL_logo_partido_coal!A1:H1"
-PARTY_URL_RANGE = "URL_logo_partido_coal!I1:R93"
+READ_RANGE = COUNTRY["READ_RANGE"]
+COALITION_URL_RANGE = COUNTRY["COALITION_URL_RANGE"]
+PARTY_URL_RANGE = COUNTRY["PARTY_URL_RANGE"]
+
+
 CSV_DB_PATH = 'csv_db'
 API_BASE = 'http://localhost:5000/'
 # API endpoints

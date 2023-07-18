@@ -285,6 +285,7 @@ def make_person_struct(dataset, contest_chambers, header):
                             last_degree = data[field].upper()
                             row[field] = Catalogues.DEGREES_OF_STUDIES.index(last_degree)
                         except ValueError:
+                            row[field] = ""
                             print("make_person_struct DEGREES_OF_STUDIES error in line", data[field].upper(),"not found")
 
                     else:
@@ -649,8 +650,8 @@ def send_data(base_url, endpoint, dataset):
                     print(f"msg: {r.json()['message']}")
             except r_excepts.ConnectionError:
                 print("[CONNECTION ERROR]")
-                print(f"#{i} | url: {full_url} | data:{row}")
-                # exit()
+                #print(f"#{i} | url: {full_url} | data:{row}")
+                exit()
             bar.update(i - 1)
     if deleted:
         with open(f"deleted/{endpoint}.txt", "a") as f:
