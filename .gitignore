@@ -140,5 +140,5 @@ dmypy.json
 #New ignores
 .idea/
 errors/
-deleted/
+deleted/*
 
