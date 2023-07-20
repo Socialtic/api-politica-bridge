@@ -397,7 +397,11 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header, role
     lines = []
     for i, data in enumerate(dataset, start=1):
         if data["coalition"]:
-            coalition_id = coalitions.index(data["coalition"].lower().strip()) + 1
+            try: 
+                coalition_id = coalitions.index(data["coalition"].lower().strip()) + 1
+            except ValueError:
+                coalition_id = -1
+                print("make_membership coalitions error",data["coalition"].lower(),"not found in line",i)
         else:
             coalition_id = -1
 
