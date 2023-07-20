@@ -28,6 +28,8 @@ area_data = sheet_reader(SHEET_ID, f"Table area!{ST_RANGES['area']}")
 area_header = area_data[0].keys()
 write_csv(make_table(area_header, area_data), f"{CSV_DB_PATH}/area")
 for area in area_data:
+    if area["area_id"] == "":
+        area["is_deleted"] = True
     del area["area_id"]
 
 # CHAMBER
@@ -35,6 +37,8 @@ chamber_data = sheet_reader(SHEET_ID, f"Table chamber!{ST_RANGES['chamber']}")
 chamber_header = chamber_data[0].keys()
 write_csv(make_table(chamber_header, chamber_data), f"{CSV_DB_PATH}/chamber")
 for chamber in chamber_data:
+    if chamber["chamber_id"] == "":
+        chamber["is_deleted"] = True
     del chamber["chamber_id"]
 
 # ROLE
@@ -42,6 +46,8 @@ role_data = sheet_reader(SHEET_ID, f"Table role!{ST_RANGES['role']}")
 role_header = role_data[0].keys()
 write_csv(make_table(role_header, role_data), f"{CSV_DB_PATH}/role")
 for role in role_data:
+    if role["role_id"] == "":
+        role["is_deleted"] = True
     del role["role_id"]
 
 # COALITION
@@ -62,6 +68,8 @@ party_header = party_data[0].keys()
 write_csv(make_table(party_header, party_data), f"{CSV_DB_PATH}/party")
 party_data = colors_to_list(party_data)
 for party in party_data:
+    if party["party_id"] == "":
+        party["is_deleted"] = True
     del party["party_id"]
 parties = sheet_reader(SHEET_ID, f"Table party!B2:B{get_end_range(ST_RANGES['party'])}", as_list=True)
 
@@ -70,6 +78,8 @@ contest_data = sheet_reader(SHEET_ID, f"Table contest!{ST_RANGES['contest']}")
 contest_header = contest_data[0].keys()
 write_csv(make_table(contest_header, contest_data), f"{CSV_DB_PATH}/contest")
 for contest in contest_data:
+    if contest["contest_id"] == "":
+        contest["is_deleted"] = True
     del contest["contest_id"]
 contest_chambers = sheet_reader(SHEET_ID, f"Table contest!C2:C{get_end_range(ST_RANGES['contest'])}",
                                 as_list=True)
