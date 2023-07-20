@@ -632,6 +632,46 @@ def get_dummy_data(endpoint):
             "owner_type": -1,
             "owner_id": -1
         }
+    elif endpoint == "area":
+        dummy_data = {
+            "ocd_id": "",
+            "name": "",
+            "country": "",
+            "state": "",
+            "city": "",
+            "district_type": -1,
+            "parent_area_id": -1,
+        }
+    elif endpoint == "role":
+        dummy_data = {
+            "title": "",
+            "role": -1,
+            "area_id": -1,
+            "chamber_id": -1,
+            "contest_id": -1,
+        }
+    elif endpoint == "party":
+        dummy_data = {
+            "name": "",
+            "abbreviation": "",
+            "area_id": -1,
+            "colors": [],
+            "coalition_id": -1,
+        }
+    elif endpoint == "contest":
+        dummy_data = {
+            "area_id": -1,
+            "title": "",
+            "membership_id_winner": -1,
+            "start_date": "0001-01-01",
+            "end_date": "0001-01-01",
+            "election_identifier": ""
+        }
+    elif endpoint == "chamber":
+        dummy_data = {
+            "area_id": -1,
+            "name": ""
+        }
     return dummy_data
 
 
