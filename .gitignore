@@ -136,3 +136,9 @@ dmypy.json
 # Csv files
 *.csv
 !data_samples/*
+
+#New ignores
+.idea/
+errors/ 
+deleted/ 
+
