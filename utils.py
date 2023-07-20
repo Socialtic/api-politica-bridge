@@ -694,6 +694,7 @@ def send_data(base_url, endpoint, dataset):
             except r_excepts.ConnectionError:
                 print("[CONNECTION ERROR]")
                 print(f"#{i} | url: {full_url} | data:{row}")
+                exit()
             bar.update(i - 1)
     if deleted:
         with open(f"deleted/{endpoint}.txt", "a") as f:
