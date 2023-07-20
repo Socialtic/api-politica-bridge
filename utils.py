@@ -402,7 +402,11 @@ def make_membership(dataset, parties, coalitions, contest_chambers, header, role
             coalition_id = -1
 
         if data["party"]:
-            party_id = parties.index(data["party"].lower()) + 1
+            try: 
+                party_id = parties.index(data["party"].lower()) + 1
+            except ValueError:
+                party_id = -1
+                print("make_membership party error",data["party"].lower(),"not found in line",i)
         else:
             party_id = -1
             print("person_id:" + str(i) + " no party")

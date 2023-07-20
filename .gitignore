@@ -139,3 +139,6 @@ dmypy.json
 
 # Deleted files
 deleted/
+
+.idea/
+errors/
