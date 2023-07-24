@@ -1,0 +1,30 @@
+{
+    "country:": "Colombia",
+    "SHEET_ID": "1W8F9cf88hRXPEeLQEVbXHtQ2K6BnoXRD9vRDWL3Qpeg",
+    "ST_RANGES": {
+        "area": "A1:H111",
+        "chamber": "A1:C111",
+        "role": "A1:F111",
+        "contest": "A1:G111",
+        "coalition": "A1:D68",
+        "party": "A1:F303",
+        "profession": "A1:B119",
+        "url_types": "B2:B23"
+    },
+    "CAPTURE_SHEET_ID": "1U7NHlEv0TS1Io15OLtkWsPt-fIrx08S0tTAEsa5LMFc",
+    "READ_RANGE": "Todos!A1:AL2913",
+    "COALITION_URL_RANGE": "URL_logo_partido_coal!A1:H86",
+    "PARTY_URL_RANGE": "URL_logo_partido_coal!J1:S289",
+    "person_header": [
+        "person_id",
+        "dni",
+        "full_name",
+        "first_name",
+        "last_name",
+        "date_birth",
+        "gender",
+        "dead_or_alive",
+        "last_degree_of_studies",
+        "contest_id"
+    ]
+}
