@@ -74,9 +74,7 @@ def main():
     make_banner("(2/3) BUILD DYNAMIC DATA")
 
     # PERSON
-    person_header = ["person_id", "full_name", "first_name", "last_name",
-                     "date_birth", "gender", "dead_or_alive",
-                     "last_degree_of_studies", "contest_id"]
+    person_header = COUNTRY["person_header"]
     # This list is ready to be send to the API
     person_data = make_person_struct(dataset, contest_chambers, person_header)
     # Making a table for double check

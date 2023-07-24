@@ -15,5 +15,17 @@
     "x_CAPTURE_SHEET_ID_campaign": "1mk9LTI5RBYwrEPzILeDY925VJbLVmEoZyRzaa1gZ_hk",
     "READ_RANGE": "Todos!A1:AG4186",
     "COALITION_URL_RANGE": "URL_logo_partido_coal!A1:H37",
-    "PARTY_URL_RANGE": "URL_logo_partido_coal!I1:R62"
+    "PARTY_URL_RANGE": "URL_logo_partido_coal!I1:R62",
+    "person_header": [
+        "person_id",
+        "curp",
+        "full_name",
+        "first_name",
+        "last_name",
+        "date_birth",
+        "gender",
+        "dead_or_alive",
+        "last_degree_of_studies",
+        "contest_id"
+    ]
 }
