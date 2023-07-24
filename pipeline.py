@@ -1,4 +1,5 @@
 import sys
+import json
 from datetime import datetime
 from sheets import sheet_reader
 from static_tables import (area_data, chamber_data, role_data, coalition_data,
@@ -10,11 +11,21 @@ from utils import (make_banner, verification_process,
                    make_other_names_struct, make_person_profession,
                    make_membership, make_url_struct, send_data)
 # ID sheets
-CAPTURE_SHEET_ID = "1U7NHlEv0TS1Io15OLtkWsPt-fIrx08S0tTAEsa5LMFc"
+
+if (len(sys.argv[1]) < 1 or len(sys.argv[2]) < 1 ):
+    exit("Missing command line parameters DB_TYPE and COUNTRY_FILE")
+
+COUNTRY_FILE = sys.argv[2];
+
+with open(COUNTRY_FILE, 'r') as f:
+    COUNTRY = json.load(f)
+
+CAPTURE_SHEET_ID = COUNTRY["CAPTURE_SHEET_ID"]
 # Capture Read Ranges
-READ_RANGE = "Todos!A1:AL2955"
-COALITION_URL_RANGE = "URL_logo_partido_coal!A1:H68"
-PARTY_URL_RANGE = "URL_logo_partido_coal!J1:S289"
+READ_RANGE = COUNTRY["READ_RANGE"]
+COALITION_URL_RANGE = COUNTRY["COALITION_URL_RANGE"]
+PARTY_URL_RANGE = COUNTRY["PARTY_URL_RANGE"]
+
 CSV_DB_PATH = 'csv_db'
 API_BASE = 'http://localhost:5000/'
 # API endpoints
@@ -134,7 +145,7 @@ def main():
     for url in url_data:
         del url["url_id"]
     print("\t * Ok.")
-
+    
     make_banner("(3/3) SEND DATA TO API")
     # AREA (static)
     print("\t * AREA")

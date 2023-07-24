@@ -1,18 +1,29 @@
 from sheets import sheet_reader
 from utils import colors_to_list, make_banner, make_table, write_csv
+import json
+import sys 
+ 
 
-SHEET_ID = "1W8F9cf88hRXPEeLQEVbXHtQ2K6BnoXRD9vRDWL3Qpeg"
 CSV_DB_PATH = 'csv_db'
 
-# Struct read ranges
-ST_RANGES = {
-    "area": "A1:H111", "chamber": "A1:C111", "role": "A1:F111",
-    "coalition": "A1:D68", "party": "A1:F293",
-    "profession": "A1:B119", "contest": "A1:G111"
-    # "past-membership": "A1:G1",
-    }
+COUNTRY_FILE = sys.argv[2];
 
-make_banner("Getting static tables data")
+with open(COUNTRY_FILE, 'r') as f:
+    COUNTRY = json.load(f)
+
+SHEET_ID = COUNTRY["SHEET_ID"]
+
+ # Struct read ranges
+ST_RANGES = COUNTRY["ST_RANGES"]
+
+def get_end_range(value):
+    end = value.split(":")[1];
+    number = end[1:]
+    return number
+
+
+make_banner(f"Getting static tables data as defined in {COUNTRY_FILE}")
+
 # AREA
 area_data = sheet_reader(SHEET_ID, f"Table area!{ST_RANGES['area']}")
 area_header = area_data[0].keys()
@@ -49,7 +60,7 @@ write_csv(make_table(coalition_header, coalition_data),
 coalition_data = colors_to_list(coalition_data)
 for coalition in coalition_data:
     del coalition["coalition_id"]
-coalitions_catalogue = sheet_reader(SHEET_ID, "Table coalition!B2:B68",
+coalitions_catalogue = sheet_reader(SHEET_ID, f"Table coalition!B2:B{get_end_range(ST_RANGES['coalition'])}",
                                     as_list=True)
 
 # PARTY
@@ -61,7 +72,7 @@ for party in party_data:
     if party["party_id"] == "":
         party["is_deleted"] = True
     del party["party_id"]
-parties = sheet_reader(SHEET_ID, "Table party!B2:B293", as_list=True)
+parties = sheet_reader(SHEET_ID, f"Table party!B2:B{get_end_range(ST_RANGES['party'])}", as_list=True)
 
 # CONTEST
 contest_data = sheet_reader(SHEET_ID, f"Table contest!{ST_RANGES['contest']}")
@@ -71,7 +82,7 @@ for contest in contest_data:
     if contest["contest_id"] == "":
         contest["is_deleted"] = True
     del contest["contest_id"]
-contest_chambers = sheet_reader(SHEET_ID, "Table contest!C2:C48",
+contest_chambers = sheet_reader(SHEET_ID, f"Table contest!C2:C{get_end_range(ST_RANGES['contest'])}",
                                 as_list=True)
 # PROFESSION
 profession_range = f"Catalogue profession!{ST_RANGES['profession']}"
@@ -81,7 +92,7 @@ write_csv(make_table(profession_header, profession_data),
           f"{CSV_DB_PATH}/profession")
 for profession in profession_data:
     del profession["profession_id"]
-professions_catalogue = sheet_reader(SHEET_ID, "Catalogue profession!B2:B119",
+professions_catalogue = sheet_reader(SHEET_ID, f"Catalogue profession!B2:B{get_end_range(ST_RANGES['profession'])}",
                                      as_list=True)
 # URL types Catalogue
-url_types = sheet_reader(SHEET_ID, "Catalogue url_types!B2:B23", as_list=True)
+url_types = sheet_reader(SHEET_ID, f"Catalogue url_types!{ST_RANGES['url_types']}", as_list=True)
