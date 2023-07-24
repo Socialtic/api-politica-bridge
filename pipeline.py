@@ -75,9 +75,7 @@ def main():
     make_banner("(2/3) BUILD DYNAMIC DATA")
 
     # PERSON
-    person_header = ["person_id", "dni", "full_name", "first_name", "last_name",
-                     "date_birth", "gender", "dead_or_alive",
-                     "last_degree_of_studies", "contest_id"]
+    person_header = COUNTRY["person_header"]
     # This list is ready to be send to the API
     person_data = make_person_struct(dataset, contest_chambers, person_header)
     # print(person_data);
@@ -118,7 +116,7 @@ def main():
                          "parent_membership_id", "changed_from_substitute",
                          "date_changed_from_substitute"]
     membership_data = make_membership(dataset, parties, coalitions_catalogue,
-                                      contest_chambers, membership_header)
+                                      contest_chambers, membership_header, role_data)
     membership_table = make_table(membership_header, membership_data)
     write_csv(membership_table, f"{CSV_DB_PATH}/membership")
     for membership in membership_data:

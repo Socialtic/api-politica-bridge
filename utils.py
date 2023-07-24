@@ -379,7 +379,7 @@ def make_person_profession(dataset, professions):
     return lines
 
 
-def make_membership(dataset, parties, coalitions, contest_chambers, header):
+def make_membership(dataset, parties, coalitions, contest_chambers, header, role):
     """**Makes membership data**
 
     This functions makes a valid list of membership data for the API
