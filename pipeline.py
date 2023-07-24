@@ -9,14 +9,24 @@ from utils import (make_banner, verification_process,
                    write_csv, make_table, make_person_struct,
                    make_other_names_struct, make_person_profession,
                    make_membership, make_url_struct, send_data)
-# ID sheets Campaign
-#CAPTURE_SHEET_ID = "1mk9LTI5RBYwrEPzILeDY925VJbLVmEoZyRzaa1gZ_hk"
-# ID sheets officeholders
-CAPTURE_SHEET_ID = "146HBFWr_6_jvmCtTPHoDcSI3dFZcqSUPdmoc69oayrU"
-# Capture Read Ranges
-READ_RANGE = "Todos!A1:AG4186"
-COALITION_URL_RANGE = "URL_logo_partido_coal!A1:H37"
-PARTY_URL_RANGE = "URL_logo_partido_coal!I1:R62"
+import json
+
+
+
+if (len(sys.argv[1]) < 1 or len(sys.argv[2]) < 1 ):
+    exit("Missing command line parameters DB_TYPE and COUNTRY_FILE")
+
+COUNTRY_FILE = sys.argv[2];
+
+with open(COUNTRY_FILE, 'r') as f:
+    COUNTRY = json.load(f)
+
+CAPTURE_SHEET_ID = COUNTRY["CAPTURE_SHEET_ID"]
+ # Capture Read Ranges
+READ_RANGE = COUNTRY["READ_RANGE"]
+COALITION_URL_RANGE = COUNTRY["COALITION_URL_RANGE"]
+PARTY_URL_RANGE = COUNTRY["PARTY_URL_RANGE"]
+
 CSV_DB_PATH = 'csv_db'
 API_BASE = 'http://localhost:5000/'
 # API endpoints

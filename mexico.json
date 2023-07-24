@@ -1,0 +1,19 @@
+{
+    "country:": "Mexico",
+    "SHEET_ID": "1H9I_fhpQWMPn5wgRvdBrnmoZ9WpgTIwJnKfda6LEycY",
+    "ST_RANGES": {
+        "area": "A1:H1137",
+        "chamber": "A1:C1137",
+        "role": "A1:F1137",
+        "contest": "A1:G1137",
+        "coalition": "A1:D54",
+        "party": "A1:F80",
+        "profession": "A1:B119",
+        "url_types": "B2:B23"
+    },
+    "CAPTURE_SHEET_ID": "146HBFWr_6_jvmCtTPHoDcSI3dFZcqSUPdmoc69oayrU",
+    "x_CAPTURE_SHEET_ID_campaign": "1mk9LTI5RBYwrEPzILeDY925VJbLVmEoZyRzaa1gZ_hk",
+    "READ_RANGE": "Todos!A1:AG4186",
+    "COALITION_URL_RANGE": "URL_logo_partido_coal!A1:H37",
+    "PARTY_URL_RANGE": "URL_logo_partido_coal!I1:R62"
+}
