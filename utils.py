@@ -254,15 +254,20 @@ def get_contest_id(data, contest_chambers):
         # location = data["state"].lower()
         location = f"vicegobernatura de {data['state'].lower()}"
 
+    if not location:
+        # Se quedo para debug :( hay que arreglar
+        print("ERROR person_id: " + str(data["person_id"]))
+        print("role_type: " + str(data["role_type"]))
+        print("location: " + str(location) + "\n")
+        print("data: " + str(data) + "\n")
+        return -1
+
+
     for i, contest_chamber in enumerate(contest_chambers, start=1):
         # if location in contest_chamber and Catalogues.SPANISH_ROLES[data["role_type"]] in contest_chamber:
         if location in contest_chamber:
             return i
 
-    # Se quedo para debug :( hay que arreglar
-    # print("person_id: " + str(data["person_id"]))
-    # print("role_type: " + str(data["role_type"]))
-    # print("location: " + str(location) + "\n")
 
     return -1
 
