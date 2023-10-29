@@ -218,7 +218,7 @@ def make_table(header, dataset):
             table += '\n'
     return table
 
-def get_contest_id(data, contest_chambers):
+def get_contest_id(data, contest_chambers,counter=0):
     """**Gets the contest id based on Catalogues**
 
     :return: The contest id if any, else
@@ -255,11 +255,14 @@ def get_contest_id(data, contest_chambers):
         location = f"vicegobernatura de {data['state'].lower()}"
 
     if not location:
-        # Se quedo para debug :( hay que arreglar
-        print("ERROR person_id: " + str(data["person_id"]))
-        print("role_type: " + str(data["role_type"]))
-        print("location: " + str(location) + "\n")
-        print("data: " + str(data) + "\n")
+        if not data["person_id"]:
+            print("get_contest_id empty data in line: " + str(counter))
+        else:
+            # Se quedo para debug :( hay que arreglar
+            print("ERROR person_id: " + str(data["person_id"]))
+            print("role_type: " + str(data["role_type"]))
+            print("location: " + str(location) + "\n")
+            print("data: " + str(data) + "\n")
         return -1
 
 
@@ -287,8 +290,10 @@ def make_person_struct(dataset, contest_chambers, header):
     :rtype: list
     """
     # print(dataset);
+    counter = 0;
     people = []
     for data in dataset:
+        counter=counter+1;
         try:
             row = dict()
             row["is_deleted"] = data["is_deleted"]
@@ -304,12 +309,13 @@ def make_person_struct(dataset, contest_chambers, header):
                             row[field] = Catalogues.DEGREES_OF_STUDIES.index(last_degree)
                         except ValueError:
                             row[field] = ""
-                            print("make_person_struct DEGREES_OF_STUDIES error in line", data[field].upper(),"not found")
+                            print("make_person_struct DEGREES_OF_STUDIES error in line", data[field].upper(),"not found",Catalogues.DEGREES_OF_STUDIES)
 
                     else:
                         row[field] = -1
                 elif field == "contest_id":
-                    row[field] = get_contest_id(data, contest_chambers)
+                    # print(counter);
+                    row[field] = get_contest_id(data, contest_chambers, counter)
                 elif field == "date_birth":
                     if data[field]:
                         row[field] = data[field]
@@ -701,7 +707,8 @@ def send_data(base_url, endpoint, dataset):
                     post_status = r.status_code
                     r = requests.delete(f"{full_url}{i}", headers=HEADERS)
                     delete_status = r.status_code
-                    print(f"#{i} POST: {post_status} DELETE: {delete_status}")
+                    if (delete_status != 200):
+                        print(f"#{i} POST: {post_status} DELETE: {delete_status}")
                     deleted.append(row)
                     continue
                 else:

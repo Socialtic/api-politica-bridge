@@ -6,13 +6,13 @@
         "chamber": "A1:C109",
         "role": "A1:F109",
         "coalition": "A1:D7",
-        "party": "A1:F194",
+        "party": "A1:F209",
         "profession": "A1:B86",
         "contest": "A1:G109",
         "url_types": "B2:B23"
     },
     "CAPTURE_SHEET_ID": "1c3gwMPO6xxFD5N0ScasrDgWBjbmP1cqbAEBHv792t5I",
-    "READ_RANGE": "Todos!A1:AL1635",
+    "READ_RANGE": "Todos!A1:AL3038",
     "COALITION_URL_RANGE": "URL_logo_partido_coal!A1:H1",
     "PARTY_URL_RANGE": "URL_logo_partido_coal!I1:R93",
     "person_header": [
